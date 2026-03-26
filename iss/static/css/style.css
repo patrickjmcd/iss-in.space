@@ -1,21 +1,287 @@
+/* === FONTS === */
 @font-face {
-	font-family: 'Iosevka Web';
-	font-display: swap;
-	font-weight: 400;
-	font-stretch: normal;
-	font-style: normal;
-	src: url('../fonts/iosevka-regular.woff2') format('woff2'), url('../fonts/iosevka-regular.woff') format('woff'), url('../fonts/iosevka-regular.ttf') format('truetype');
+    font-family: 'Iosevka Web';
+    font-display: swap;
+    font-weight: 400;
+    font-style: normal;
+    src: url('../fonts/iosevka-regular.woff2') format('woff2'),
+         url('../fonts/iosevka-regular.woff') format('woff'),
+         url('../fonts/iosevka-regular.ttf') format('truetype');
 }
 
 @font-face {
-	font-family: 'Iosevka Web';
-	font-display: swap;
-	font-weight: 700;
-	font-stretch: normal;
-	font-style: normal;
-	src: url('../fonts/iosevka-bold.woff2') format('woff2'), url('../fonts/iosevka-bold.woff') format('woff'), url('../fonts/iosevka-bold.ttf') format('truetype');
+    font-family: 'Iosevka Web';
+    font-display: swap;
+    font-weight: 700;
+    font-style: normal;
+    src: url('../fonts/iosevka-bold.woff2') format('woff2'),
+         url('../fonts/iosevka-bold.woff') format('woff'),
+         url('../fonts/iosevka-bold.ttf') format('truetype');
 }
+
+/* === THEME VARIABLES === */
+:root {
+    --bg:          #0e1016;
+    --surface:     #161b24;
+    --surface-2:   #1e2330;
+    --border:      #2a303e;
+    --text-1:      #dce1ec;
+    --text-2:      #8c96ab;
+    --text-3:      #545e72;
+    --accent:      #5c9ee8;
+    --accent-bg:   #1a2e4a;
+    --accent-hover:#4a8cd6;
+    --elev-excellent: #e8a020;
+    --elev-good:      #3ec487;
+    --elev-avg:       #dce1ec;
+    --elev-low:       #545e72;
+    --row-hover:   rgba(255, 255, 255, 0.04);
+    --toggle-bg:   #1e2330;
+    --toggle-border: #3a4256;
+}
+
+[data-theme="light"] {
+    --bg:          #f4f6fb;
+    --surface:     #ffffff;
+    --surface-2:   #e8ecf4;
+    --border:      #cdd4e0;
+    --text-1:      #1a1f2e;
+    --text-2:      #445068;
+    --text-3:      #8a95a8;
+    --accent:      #1d5fa8;
+    --accent-bg:   #ddeeff;
+    --accent-hover:#164d8a;
+    --elev-excellent: #b06010;
+    --elev-good:      #1a7a50;
+    --elev-avg:       #1a1f2e;
+    --elev-low:       #8a95a8;
+    --row-hover:   rgba(0, 0, 0, 0.04);
+    --toggle-bg:   #e8ecf4;
+    --toggle-border: #c0c8d8;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+        --bg:          #f4f6fb;
+        --surface:     #ffffff;
+        --surface-2:   #e8ecf4;
+        --border:      #cdd4e0;
+        --text-1:      #1a1f2e;
+        --text-2:      #445068;
+        --text-3:      #8a95a8;
+        --accent:      #1d5fa8;
+        --accent-bg:   #ddeeff;
+        --accent-hover:#164d8a;
+        --elev-excellent: #b06010;
+        --elev-good:      #1a7a50;
+        --elev-avg:       #1a1f2e;
+        --elev-low:       #8a95a8;
+        --row-hover:   rgba(0, 0, 0, 0.04);
+        --toggle-bg:   #e8ecf4;
+        --toggle-border: #c0c8d8;
+    }
+}
+
+/* === BASE === */
+* { box-sizing: border-box; }
 
 body {
     font-family: "Iosevka Web", monospace;
+    background-color: var(--bg);
+    color: var(--text-1);
+    transition: background-color 0.2s, color 0.2s;
 }
+
+a { color: var(--accent); }
+a:hover { color: var(--accent-hover); }
+
+hr { border-color: var(--border); }
+
+/* === TACHYONS OVERRIDES === */
+/* Body classes */
+.bg-near-black { background-color: var(--bg) !important; }
+.near-white     { color: var(--text-1) !important; }
+.moon-gray,
+.mid-gray,
+.light-gray,
+.light-silver,
+.silver         { color: var(--text-2) !important; }
+.dark-gray      { color: var(--text-3) !important; }
+.light-blue     { color: var(--accent) !important; }
+.dark-navy      { color: var(--text-1) !important; }
+
+/* Backgrounds */
+.bg-dark-gray   { background-color: var(--surface-2) !important; }
+.bg-dark-blue   { background-color: var(--accent-bg) !important; }
+.hover-bg-blue:hover  { background-color: var(--accent) !important; }
+.hover-bg-mid-gray:hover { background-color: var(--surface-2) !important; }
+
+/* Borders */
+.b--dark-gray   { border-color: var(--border) !important; }
+
+/* Tachyons link dimming override for themed links */
+.link { color: inherit; }
+.link.light-blue { color: var(--accent) !important; }
+
+/* === ELEVATION CLASSES === */
+.elev-excellent { color: var(--elev-excellent); }
+.elev-good      { color: var(--elev-good); }
+.elev-avg       { color: var(--elev-avg); }
+.elev-low       { color: var(--elev-low); }
+
+/* === THEME TOGGLE === */
+.theme-toggle {
+    background: var(--toggle-bg);
+    border: 1px solid var(--toggle-border);
+    color: var(--text-2);
+    font-family: "Iosevka Web", monospace;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.theme-toggle:hover {
+    background: var(--surface-2);
+    color: var(--text-1);
+    border-color: var(--text-3);
+}
+
+/* === COMPONENTS === */
+
+/* Inputs */
+input[type="number"],
+input[type="text"] {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    font-family: "Iosevka Web", monospace;
+    border-radius: 4px;
+    transition: border-color 0.15s;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
+/* Buttons */
+.btn-primary {
+    display: inline-block;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    font-family: "Iosevka Web", monospace;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.btn-primary:hover {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+.btn-secondary {
+    display: inline-block;
+    background: var(--surface-2);
+    color: var(--text-2);
+    border: 1px solid var(--border);
+    font-family: "Iosevka Web", monospace;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.btn-secondary:hover {
+    color: var(--text-1);
+    border-color: var(--text-3);
+}
+
+/* Controls bar */
+.controls-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.controls-bar label {
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 0.1s;
+}
+
+.controls-bar label:hover {
+    color: var(--text-1);
+}
+
+/* Table */
+.passes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.passes-table th {
+    color: var(--text-3);
+    font-weight: 400;
+    border-bottom: 1px solid var(--border);
+}
+
+.passes-table td {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+}
+
+.passes-table tr:last-child td {
+    border-bottom: none;
+}
+
+.passes-table tbody tr:hover td {
+    background: var(--row-hover);
+}
+
+/* Date group header */
+.date-header {
+    color: var(--text-3);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0;
+}
+
+/* Divider */
+.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+}
+
+/* Surface card */
+.surface {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.gap { gap: 0.5rem; }
+
+/* Min-height for location display to prevent layout shift */
+.location-coords-placeholder { min-height: 2.5rem; }

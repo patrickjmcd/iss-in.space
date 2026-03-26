@@ -19,6 +19,7 @@ class Predictions(object):
         start=None,
         days=10,
         tle_file=None,
+        satellite_obj=None,
     ):
         self.lat = lat
         self.lng = lng
@@ -28,7 +29,7 @@ class Predictions(object):
         self.days = days
         self.tle_file = tle_file.resolve().as_posix() if tle_file else STATIONS_URL
 
-        self.satellite = self.init_satellite(satellite)
+        self.satellite = satellite_obj or self.init_satellite(satellite)
         self.location = self.init_location()
 
     def init_stations(self):

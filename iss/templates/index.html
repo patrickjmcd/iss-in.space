@@ -1,5 +1,88 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="/passes/{{ location.latitude }}/{{ location.longitude }}" class="link light-blue dim">{{ location.latitude }}, {{ location.longitude }}, {{ location.time_zone }}</a>
+
+<div class="mb4">
+    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Detected location</p>
+    <p class="f3 fw7 mb1 location-coords-placeholder" id="location-coords" style="color:var(--text-1)"></p>
+    <p class="f6 mb3" id="location-tz" style="color:var(--text-2)"></p>
+    <a id="view-passes-btn" class="btn-primary" style="display:none">View Passes &rarr;</a>
+</div>
+
+<hr class="divider mt4 mb4">
+
+<div>
+    <p class="f7 ttu tracked mb3" style="color:var(--text-3)">Enter coordinates manually</p>
+    <div class="flex flex-wrap items-end gap">
+        <div class="mr3 mb2">
+            <label class="f7 ttu tracked db mb1" style="color:var(--text-3)" for="lat">Latitude</label>
+            <input id="lat" type="number" step="any" min="-90" max="90" placeholder="37.7749"
+                class="f5 pa2 w4" />
+        </div>
+        <div class="mr3 mb2">
+            <label class="f7 ttu tracked db mb1" style="color:var(--text-3)" for="lng">Longitude</label>
+            <input id="lng" type="number" step="any" min="-180" max="180" placeholder="-122.4194"
+                class="f5 pa2 w4" />
+        </div>
+        <div class="mb2">
+            <button class="btn-secondary f5"
+                onclick="navigateToCoords(document.getElementById('lat').value, document.getElementById('lng').value)">
+                Go &rarr;
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var ipLocation = {
+        lat: {{ location.latitude if location.latitude else 'null' }},
+        lng: {{ location.longitude if location.longitude else 'null' }},
+        tz: "{{ location.time_zone if location.time_zone else '' }}"
+    };
+
+    function navigateToCoords(lat, lng) {
+        var la = parseFloat(lat), lo = parseFloat(lng);
+        if (!isNaN(la) && !isNaN(lo)) window.location = '/passes/' + la + '/' + lo;
+    }
+
+    function showLocation(lat, lng, tz) {
+        document.getElementById('location-coords').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+        document.getElementById('location-tz').textContent = tz || '';
+        var btn = document.getElementById('view-passes-btn');
+        btn.href = '/passes/' + lat + '/' + lng;
+        btn.style.display = '';
+    }
+
+    function onGeoSuccess(pos) {
+        showLocation(
+            pos.coords.latitude,
+            pos.coords.longitude,
+            Intl.DateTimeFormat().resolvedOptions().timeZone
+        );
+    }
+
+    function onGeoError() {
+        if (ipLocation.lat !== null) {
+            showLocation(ipLocation.lat, ipLocation.lng, ipLocation.tz);
+        } else {
+            document.getElementById('location-coords').textContent = 'Location unavailable';
+        }
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoError, { timeout: 8000 });
+    } else {
+        onGeoError();
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            navigateToCoords(
+                document.getElementById('lat').value,
+                document.getElementById('lng').value
+            );
+        }
+    });
+</script>
+
 {% endblock %}

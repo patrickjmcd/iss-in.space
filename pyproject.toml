@@ -10,6 +10,8 @@ dependencies = [
     "geoip2>=4.8.0",
     "jinja2>=3.1.4",
     "pyephem>=9.99",
+    "redis>=5.0",
+    "slowapi>=0.1.9",
     "skyfield>=1.49",
     "uvicorn>=0.32.0",
 ]

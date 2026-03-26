@@ -3,34 +3,75 @@
 
 <head>
     <meta charset="utf-8">
-    <title>ISS Predictions | ISS.guru</title>
+    <title>ISS-in.space &mdash; Pass Predictions</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="ISS predictions for overhead passes">
+    <meta name="description" content="Accurate ISS overhead pass predictions for visual observation and amateur radio">
     <meta name="keywords" content="ISS, international space station, passes, predictions, overhead, amateur radio">
     <link rel="stylesheet" href="/static/css/tachyons.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="shortcut icon" href="/static/img/favicon.ico" />
     <script src="https://cdn.usefathom.com/script.js" data-site="BUVXMLRG" defer></script>
-    {% block extrahead %}
-    {% endblock %}
+    <!-- Prevent flash of wrong theme -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('iss-theme');
+            if (t) document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+    {% block extrahead %}{% endblock %}
 </head>
 
-<body class="bg-near-black near-white">
-    <div class="pa4 mw8 center">
-        <a href="/" class="no-underline dim">
-            <h1 class="f1 moon-gray">ISS Pass Predictions</h1>
-        </a>
-        <p class="light-red">Upcoming passes of the <a href="https://en.wikipedia.org/wiki/International_Space_Station"
-                class="link red dim">International Space Station</a> at your location over the next 10 days.</p>
+<body class="min-vh-100 flex flex-column">
+    <div class="pa3 pa4-ns mw8 center w-100 flex-auto">
 
-        {% block content %}
-        {% endblock %}
+        <header class="mb4 pb3 bb b--dark-gray flex items-center justify-between">
+            <a href="/" class="no-underline dim flex items-baseline" style="color:inherit">
+                <span class="f2 fw7 tracked-tight" style="color:var(--text-1)">ISS</span><span class="f2 fw4" style="color:var(--text-3)">-in.space</span>
+            </a>
+            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"></button>
+        </header>
 
-        <hr class="mt5 dark-gray">
-        <p class="near-white">Created by <a href="https://yuv.al/" class="link light-blue dim">Yuval Adam</a>, source
-            code
-            available on <a href="https://github.com/yuvadm/iss.guru" class="link light-blue dim">Github</a>.</p>
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+
     </div>
+
+    <footer class="pa3 pa4-ns mw8 center w-100 mt4" style="border-top:1px solid var(--border)">
+        <p class="f7 mb0" style="color:var(--text-3)">
+            By <a href="https://github.com/patrickjmcd" class="dim" style="color:var(--text-2)" target="_blank" rel="noopener">patrickjmcd</a>.
+            Source on <a href="https://github.com/patrickjmcd/iss-in.space" class="dim" style="color:var(--text-2)" target="_blank" rel="noopener">GitHub</a>.
+            TLE data from <a href="https://celestrak.org" class="dim" style="color:var(--text-2)" target="_blank" rel="noopener">Celestrak</a>.
+        </p>
+    </footer>
+
+    <script>
+        var DARK = 'dark', LIGHT = 'light';
+
+        function getEffectiveTheme() {
+            var saved = document.documentElement.getAttribute('data-theme');
+            if (saved) return saved;
+            return window.matchMedia('(prefers-color-scheme: light)').matches ? LIGHT : DARK;
+        }
+
+        function applyToggleLabel() {
+            var btn = document.getElementById('theme-toggle');
+            if (!btn) return;
+            btn.textContent = getEffectiveTheme() === DARK ? '☀ light' : '◑ dark';
+        }
+
+        function toggleTheme() {
+            var next = getEffectiveTheme() === DARK ? LIGHT : DARK;
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('iss-theme', next);
+            applyToggleLabel();
+        }
+
+        applyToggleLabel();
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+            if (!localStorage.getItem('iss-theme')) applyToggleLabel();
+        });
+    </script>
 </body>
 
 </html>

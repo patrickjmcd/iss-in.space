@@ -1,19 +1,34 @@
 import json
+from pathlib import Path
+from typing import Optional
 
 from fastapi import FastAPI, Request, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from typing import Optional
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from .geo import get_location
-from .predictions import Predictions
+from .predictions import ISS, Predictions
+from .tle_cache import get_satellites
 from .utils import display_lat_lng
 
+BASE_DIR = Path(__file__).parent
+
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-app.mount("/static", StaticFiles(directory="iss/static"), name="static")
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
-templates = Jinja2Templates(directory="iss/templates")
+templates = Jinja2Templates(directory=BASE_DIR / "templates")
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 
 @app.get("/")
@@ -26,8 +41,10 @@ async def home(request: Request, cf_connecting_ip: Optional[str] = Header(None))
 
 
 @app.get("/passes/{lat}/{lng}")
+@limiter.limit("30/minute")
 async def passes(request: Request, lat: float, lng: float):
-    preds = Predictions(lat, lng, altitude=0, days=5).get_predictions()
+    satellites = await get_satellites()
+    preds = Predictions(lat, lng, altitude=0, days=5, satellite_obj=satellites[ISS]).get_predictions()
     dlat, dlng = display_lat_lng(lat, lng)
     return templates.TemplateResponse(
         "passes.html",
@@ -40,5 +57,7 @@ async def passes(request: Request, lat: float, lng: float):
 
 
 @app.get("/api/passes/{lat}/{lng}")
-async def passes_api(lat: float, lng: float):
-    return Predictions(lat, lng, altitude=0, days=5).get_predictions()
+@limiter.limit("30/minute")
+async def passes_api(request: Request, lat: float, lng: float):
+    satellites = await get_satellites()
+    return Predictions(lat, lng, altitude=0, days=5, satellite_obj=satellites[ISS]).get_predictions()

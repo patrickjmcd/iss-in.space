@@ -6,96 +6,133 @@
 
 {% block content %}
 <div id="passes">
-    <p class="f3">Passes for {{ location.dlat }}, {{ location.dlng }}</p>
-    <p class="f4">Times localized for <span class="light-gray">[[ tz.name ]]</span> (UTC[[ tz.offset ]])</p>
-    <div>
-        <input type="checkbox" id="degrees" v-model="display.degrees">
-        <label for="degrees">Azimuth Degrees</label>
-        <input type="checkbox" id="hour12" v-model="display.hour12">
-        <label for="hour12">24-hour Times</label>
+
+    <div class="flex flex-wrap items-start justify-between mb4">
+        <div>
+            <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Passes for</p>
+            <p class="f3 fw7 mb1" style="color:var(--text-1)">{{ location.dlat }}, {{ location.dlng }}</p>
+            <p class="f6 mb0" style="color:var(--text-2)">
+                [[ tz.name ]] <span style="color:var(--text-3)">(UTC[[ tz.offset ]])</span>
+            </p>
+        </div>
+        <a href="/" class="f6 dim mt2 no-underline" style="color:var(--text-3)">&larr; Change location</a>
     </div>
-    <table class="tl pa1 w-100">
-        <tr class="pa1 f3">
-            <th colspan="1">Total</th>
-            <th colspan="2">Rise</th>
-            <th colspan="5">Culminate</th>
-            <th colspan="2">Set</th>
-        </tr>
-        <tr class="pa1 f4">
-            <th>Length</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Azimuth</th>
-            <th>Time</th>
-            <th>Azimuth</th>
-            <th>Elevation</th>
-            <th>Distance</th>
-            <th>Time</th>
-            <th>Azimuth</th>
-        </tr>
-        <tr class="pa1" v-for="(pred, index) in localizedPredictions" v-bind:class="[ index % 2 == 0 ? 'light-silver' : 'light-gray' ]">
-            <td class="f5">[[ pred.length_mins ]]</td>
-            <td>[[ pred.date ]]</td>
-            <td>[[ pred.rise.time ]]</td>
-            <td>
-                <span class="f4" v-if="!display.degrees">[[ pred.rise.direction ]]</span>
-                <span class="f4" v-if="display.degrees">[[ pred.rise.azimuth ]]<span class="mid-gray">&deg;</span></span>
-            </td>
-            <td>[[ pred.culminate.time ]]</td>
-            <td>
-                <span class="f4" v-if="!display.degrees">[[ pred.culminate.direction ]]</span>
-                <span class="f4" v-if="display.degrees">[[ pred.culminate.azimuth ]]<span class="mid-gray">&deg;</span></span>
-            </td>
-            <td class="f4">[[ pred.culminate.degrees ]]<span class="mid-gray">&deg;</span></td>
-            <td>[[ pred.culminate.distance ]]</td>
-            <td>[[ pred.set.time ]]</td>
-            <td>
-                <span class="f4" v-if="!display.degrees">[[ pred.set.direction ]]</span>
-                <span class="f4" v-if="display.degrees">[[ pred.set.azimuth ]]<span class="mid-gray">&deg;</span></span>
-            </td>
-        </tr>
-    </table>
+
+    <div class="controls-bar flex flex-wrap items-center mb4 pv2 ph3">
+        <span class="f7 ttu tracked mr3" style="color:var(--text-3)">Display</span>
+        <label class="f6 mr4 flex items-center">
+            <input type="checkbox" v-model="display.degrees" class="mr1"> Degrees
+        </label>
+        <label class="f6 flex items-center">
+            <input type="checkbox" v-model="display.hour24"> 24h time
+        </label>
+        <div class="flex flex-wrap items-center ml-auto">
+            <span class="f7 ttu tracked mr2" style="color:var(--text-3)">Elevation</span>
+            <span class="f7 mr2"><span class="elev-excellent">&#9632;</span> <span style="color:var(--text-2)">&ge;60&deg;</span></span>
+            <span class="f7 mr2"><span class="elev-good">&#9632;</span> <span style="color:var(--text-2)">&ge;30&deg;</span></span>
+            <span class="f7 mr2"><span class="elev-avg">&#9632;</span> <span style="color:var(--text-2)">&ge;10&deg;</span></span>
+            <span class="f7"><span class="elev-low">&#9632;</span> <span style="color:var(--text-2)">low</span></span>
+        </div>
+    </div>
+
+    <div v-if="Object.keys(groupedPredictions).length === 0" class="tc pv5 f5" style="color:var(--text-2)">
+        No passes in the next 5 days.
+    </div>
+
+    <div v-for="(passes, date) in groupedPredictions" class="mb4">
+        <p class="date-header mb0">[[ date ]]</p>
+        <table class="passes-table">
+            <thead>
+                <tr class="f7 tl">
+                    <th class="pb2 pr3 fw4">Duration</th>
+                    <th class="pb2 pr3 fw4" colspan="2">Rise</th>
+                    <th class="pb2 pr3 fw4" colspan="4">Peak</th>
+                    <th class="pb2 pr3 fw4" colspan="2">Set</th>
+                </tr>
+                <tr class="f7 tl" style="color:var(--text-3)">
+                    <th class="pb2 pr3 fw4"></th>
+                    <th class="pb2 pr3 fw4">Time</th>
+                    <th class="pb2 pr3 fw4">Dir</th>
+                    <th class="pb2 pr3 fw4">Time</th>
+                    <th class="pb2 pr3 fw4">Elev</th>
+                    <th class="pb2 pr3 fw4">Dir</th>
+                    <th class="pb2 pr3 fw4">Dist</th>
+                    <th class="pb2 pr3 fw4">Time</th>
+                    <th class="pb2 pr3 fw4">Dir</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="pred in passes" class="f5">
+                    <td class="pv2 pr3 f6" style="color:var(--text-2)">[[ pred.length_mins ]]</td>
+                    <td class="pv2 pr3">[[ pred.rise.time ]]</td>
+                    <td class="pv2 pr3 f6" style="color:var(--text-2)">
+                        <span v-if="!display.degrees">[[ pred.rise.direction ]]</span>
+                        <span v-else>[[ pred.rise.azimuth ]]&deg;</span>
+                    </td>
+                    <td class="pv2 pr3">[[ pred.culminate.time ]]</td>
+                    <td class="pv2 pr3 fw7" v-bind:class="elevationClass(pred.culminate.degrees)">
+                        [[ pred.culminate.degrees ]]&deg;
+                    </td>
+                    <td class="pv2 pr3 f6" style="color:var(--text-2)">
+                        <span v-if="!display.degrees">[[ pred.culminate.direction ]]</span>
+                        <span v-else>[[ pred.culminate.azimuth ]]&deg;</span>
+                    </td>
+                    <td class="pv2 pr3 f6" style="color:var(--text-2)">[[ pred.culminate.distance ]] km</td>
+                    <td class="pv2 pr3">[[ pred.set.time ]]</td>
+                    <td class="pv2 pr3 f6" style="color:var(--text-2)">
+                        <span v-if="!display.degrees">[[ pred.set.direction ]]</span>
+                        <span v-else>[[ pred.set.azimuth ]]&deg;</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
 </div>
 
 <script>
-    var groupBy = function(xs, key) {
-        return xs.reduce(function(rv, x) {
-            (rv[x[key]] = rv[x[key]] || []).push(x);
-            return rv;
-        }, {});
-    };
-
-    var passes = new Vue({
+    new Vue({
         el: "#passes",
-        delimiters: ["[[","]]"],
+        delimiters: ["[[", "]]"],
         data: {
             predictions: {{ predictions_json|safe }},
-            display: {
-                hour12: true,
-                degrees: true
-            },
+            display: { hour24: false, degrees: false },
         },
         computed: {
-            tz: function() {
+            tz: function () {
                 var offset = new Date().getTimezoneOffset() / -60;
                 return {
-                    "name": Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    "offset": offset >= 0 ? "+" + offset : offset
-                }
+                    name: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    offset: offset >= 0 ? "+" + offset : offset,
+                };
             },
-            localizedPredictions: function() {
-                var hour12 = !this.display.hour12;
-                var preds = JSON.parse(JSON.stringify(this.predictions)).map(function(p) {
-                    p.date = new Date(p.rise.time).toLocaleDateString();
-                    p.rise.time = new Date(p.rise.time).toLocaleTimeString([], { hour12 });
-                    p.culminate.time = new Date(p.culminate.time).toLocaleTimeString([], { hour12 });
-                    p.set.time = new Date(p.set.time).toLocaleTimeString([], { hour12 });
+            localizedPredictions: function () {
+                var hour12 = !this.display.hour24;
+                return JSON.parse(JSON.stringify(this.predictions)).map(function (p) {
+                    p.date = new Date(p.rise.time).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+                    p.rise.time = new Date(p.rise.time).toLocaleTimeString([], { hour12, hour: '2-digit', minute: '2-digit' });
+                    p.culminate.time = new Date(p.culminate.time).toLocaleTimeString([], { hour12, hour: '2-digit', minute: '2-digit' });
+                    p.set.time = new Date(p.set.time).toLocaleTimeString([], { hour12, hour: '2-digit', minute: '2-digit' });
                     return p;
                 });
-
-                return preds;
-            }
-        }
+            },
+            groupedPredictions: function () {
+                var groups = {};
+                this.localizedPredictions.forEach(function (p) {
+                    if (!groups[p.date]) groups[p.date] = [];
+                    groups[p.date].push(p);
+                });
+                return groups;
+            },
+        },
+        methods: {
+            elevationClass: function (deg) {
+                if (deg >= 60) return 'elev-excellent';
+                if (deg >= 30) return 'elev-good';
+                if (deg >= 10) return 'elev-avg';
+                return 'elev-low';
+            },
+        },
     });
 </script>
 {% endblock %}

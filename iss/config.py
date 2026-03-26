@@ -1,5 +1,7 @@
 from os import environ
 
+REDIS_URL = environ.get("REDIS_URL")
+
 GEOIP_GEOLITE2_PATH = environ.get("GEOIP_GEOLITE2_PATH")
 GEOIP_GEOLITE2_CITY_FILENAME = environ.get(
     "GEOIP_GEOLITE2_CITY_FILENAME", "GeoLite2-City.mmdb"
