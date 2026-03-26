@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/patrickjmcd/iss-in.space/compare/v1.2.0...v1.2.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* add QEMU setup for multi-platform Docker builds ([30b31ba](https://github.com/patrickjmcd/iss-in.space/commit/30b31baf424b675bd973b01f9f9b9122f648e9ef))
+
 ## [1.2.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.1.0...v1.2.0) (2026-03-26)
 
 
