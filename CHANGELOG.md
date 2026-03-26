@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.2.1...v1.3.0) (2026-03-26)
+
+
+### Features
+
+* enhance UI with location, manual coordinates, and API documentation sections ([68e0290](https://github.com/patrickjmcd/iss-in.space/commit/68e0290be4a64abede64335f69f185e9782458f0))
+
 ## [1.2.1](https://github.com/patrickjmcd/iss-in.space/compare/v1.2.0...v1.2.1) (2026-03-26)
 
 
