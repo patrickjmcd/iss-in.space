@@ -5,9 +5,9 @@ import geoip2.errors
 from .config import GEOIP_GEOLITE2_CITY_PATH
 
 DEFAULT_LOCATION = {
-    "latitude": 34.7641,
-    "longitude": 32.0669,
-    "time_zone": "Asia/Jerusalem",
+    "latitude": 28.3922,
+    "longitude": -80.6077,
+    "time_zone": "America/New_York",
 }
 
 default_location = namedtuple("Location", DEFAULT_LOCATION.keys())(
