@@ -1,6 +1,6 @@
 [project]
 name = "issguru"
-version = "1.1.0"
+version = "1.2.0"
 description = "ISS pass predictions"
 readme = "README.md"
 requires-python = ">=3.12"
