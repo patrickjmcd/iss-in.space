@@ -2,6 +2,7 @@
 
 {% block content %}
 
+<!-- Location + CTA -->
 <div class="mb4">
     <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Detected location</p>
     <p class="f3 fw7 mb1 location-coords-placeholder" id="location-coords" style="color:var(--text-1)"></p>
@@ -11,7 +12,8 @@
 
 <hr class="divider mt4 mb4">
 
-<div>
+<!-- Manual coordinates -->
+<div class="mb4">
     <p class="f7 ttu tracked mb3" style="color:var(--text-3)">Enter coordinates manually</p>
     <div class="flex flex-wrap items-end gap">
         <div class="mr3 mb2">
@@ -30,6 +32,85 @@
                 Go &rarr;
             </button>
         </div>
+    </div>
+</div>
+
+<hr class="divider mt4 mb4">
+
+<!-- About -->
+<div class="mb4">
+    <p class="f7 ttu tracked mb3" style="color:var(--text-3)">About</p>
+    <p class="f5 lh-copy mb3" style="color:var(--text-2)">
+        ISS-in.space predicts when the
+        <a href="https://en.wikipedia.org/wiki/International_Space_Station" target="_blank" rel="noopener" style="color:var(--accent)">International Space Station</a>
+        will pass overhead at your location for the next 5 days — useful for both visual observation and amateur radio passes (AOS/LOS times, azimuth, max elevation).
+    </p>
+    <div class="flex flex-wrap">
+        <div class="w-100 w-50-ns pr3-ns mb3">
+            <p class="f7 ttu tracked mb2" style="color:var(--text-3)">Reading the table</p>
+            <ul class="f6 lh-copy pl3 mb0" style="color:var(--text-2)">
+                <li class="mb1"><strong style="color:var(--text-1)">Rise / Set</strong> — when the ISS crosses the horizon and in which direction</li>
+                <li class="mb1"><strong style="color:var(--text-1)">Peak elevation</strong> — how high it gets; higher = brighter and longer visible. Passes below ~10° are hard to see</li>
+                <li class="mb1"><strong style="color:var(--text-1)">Distance</strong> — slant range at peak (line-of-sight, not orbital altitude)</li>
+                <li><strong style="color:var(--text-1)">Duration</strong> — total time above the horizon</li>
+            </ul>
+        </div>
+        <div class="w-100 w-50-ns pl3-ns mb3" style="border-left:1px solid var(--border)">
+            <p class="f7 ttu tracked mb2" style="color:var(--text-3)">How it works</p>
+            <ul class="f6 lh-copy pl3 mb0" style="color:var(--text-2)">
+                <li class="mb1">Orbital data (TLE) is fetched from <a href="https://celestrak.org" target="_blank" rel="noopener" style="color:var(--accent)">Celestrak</a> and cached for 2 hours</li>
+                <li class="mb1">Pass times are calculated using <a href="https://rhodesmill.org/skyfield/" target="_blank" rel="noopener" style="color:var(--accent)">Skyfield</a> with the SGP4 propagation model — the same standard used by NORAD</li>
+                <li>All times are localized to your browser's timezone</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<hr class="divider mt4 mb4">
+
+<!-- API -->
+<div class="mb4">
+    <p class="f7 ttu tracked mb3" style="color:var(--text-3)">API</p>
+    <p class="f6 lh-copy mb3" style="color:var(--text-2)">
+        Pass predictions are available as JSON. No authentication required.
+        Rate limited to 30 requests/minute per IP.
+    </p>
+
+    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Endpoint</p>
+    <pre class="f6 pa3 br2 mb3 overflow-x-auto" style="background:var(--surface);border:1px solid var(--border);color:var(--text-1)">GET /api/passes/{lat}/{lng}</pre>
+
+    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Example</p>
+    <pre class="f6 pa3 br2 mb3 overflow-x-auto" style="background:var(--surface);border:1px solid var(--border);color:var(--text-1)">curl https://iss-in.space/api/passes/28.3922/-80.6077</pre>
+
+    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Response</p>
+    <pre class="f6 pa3 br2 overflow-x-auto" style="background:var(--surface);border:1px solid var(--border);color:var(--text-1)">[
+  {
+    "length": 427,
+    "length_mins": "7:07",
+    "rise":      { "time": "2026-03-27T00:15:22Z", "degrees": 0,  "azimuth": 214, "direction": "SW", "distance": 2621 },
+    "culminate": { "time": "2026-03-27T00:18:35Z", "degrees": 43, "azimuth": 142, "direction": "SE", "distance": 559  },
+    "set":       { "time": "2026-03-27T00:21:49Z", "degrees": 0,  "azimuth": 71,  "direction": "ENE","distance": 2583 }
+  }
+]</pre>
+
+    <div class="mt3">
+        <p class="f7 ttu tracked mb2" style="color:var(--text-3)">Fields</p>
+        <table class="f6 w-100 collapse" style="border-spacing:0;color:var(--text-2)">
+            <tbody>
+                <tr style="border-bottom:1px solid var(--border)">
+                    <td class="pv1 pr3 fw7" style="color:var(--text-1);white-space:nowrap">length</td>
+                    <td class="pv1">Pass duration in seconds</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border)">
+                    <td class="pv1 pr3 fw7" style="color:var(--text-1);white-space:nowrap">length_mins</td>
+                    <td class="pv1">Pass duration as <code style="color:var(--accent)">m:ss</code></td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border)">
+                    <td class="pv1 pr3 fw7" style="color:var(--text-1);white-space:nowrap">rise / culminate / set</td>
+                    <td class="pv1">Event objects, each with <code style="color:var(--accent)">time</code> (ISO 8601 UTC), <code style="color:var(--accent)">degrees</code> (elevation), <code style="color:var(--accent)">azimuth</code> (0–360°), <code style="color:var(--accent)">direction</code> (cardinal), <code style="color:var(--accent)">distance</code> (km slant range)</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
