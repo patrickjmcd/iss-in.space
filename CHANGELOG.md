@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.4.0...v1.5.0) (2026-03-27)
+
+
+### Features
+
+* icons ([4b33438](https://github.com/patrickjmcd/iss-in.space/commit/4b33438b30e03f7550b32220886cb932716e76d2))
+
 ## [1.4.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.3.0...v1.4.0) (2026-03-27)
 
 
