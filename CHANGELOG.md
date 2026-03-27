@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.3.0...v1.4.0) (2026-03-27)
+
+
+### Features
+
+* update font files and enhance HTML metadata for improved SEO ([94db97d](https://github.com/patrickjmcd/iss-in.space/commit/94db97dff26f1d7c63129d8ff60e2a01282ea01b))
+
 ## [1.3.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.2.1...v1.3.0) (2026-03-26)
 
 
