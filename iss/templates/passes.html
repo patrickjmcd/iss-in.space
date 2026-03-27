@@ -1,5 +1,22 @@
 {% extends "base.html" %}
 
+{% block meta %}
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ISS-in.space">
+<meta property="og:url" content="https://iss-in.space/passes/{{ location.lat }}/{{ location.lng }}">
+<meta property="og:title" content="ISS passes for {{ location.dlat }}, {{ location.dlng }}">
+<meta property="og:description" content="Upcoming ISS overhead passes for {{ location.dlat }}, {{ location.dlng }} — times, directions, and max elevation for the next 5 days.">
+<meta property="og:image" content="https://iss-in.space/static/img/og-image.png">
+<!-- Twitter / iMessage -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ISS passes for {{ location.dlat }}, {{ location.dlng }}">
+<meta name="twitter:description" content="Upcoming ISS overhead passes for {{ location.dlat }}, {{ location.dlng }} — times, directions, and max elevation for the next 5 days.">
+<meta name="twitter:image" content="https://iss-in.space/static/img/og-image.png">
+{% endblock %}
+
+{% block title %}ISS passes for {{ location.dlat }}, {{ location.dlng }}{% endblock %}
+
 {% block extrahead %}
 <script src="/static/js/vue.min.js"></script>
 {% endblock %}

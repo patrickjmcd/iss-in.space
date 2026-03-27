@@ -3,10 +3,29 @@
 
 <head>
     <meta charset="utf-8">
-    <title>ISS-in.space &mdash; Pass Predictions</title>
+    <title>{% block title %}ISS-in.space &mdash; Pass Predictions{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Accurate ISS overhead pass predictions for visual observation and amateur radio">
     <meta name="keywords" content="ISS, international space station, passes, predictions, overhead, amateur radio">
+
+    {% block meta %}
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ISS-in.space">
+    <meta property="og:url" content="https://iss-in.space/">
+    <meta property="og:title" content="ISS-in.space — Pass Predictions">
+    <meta property="og:description" content="Find out when the International Space Station will fly over your location. Free JSON API included.">
+    <meta property="og:image" content="https://iss-in.space/static/img/og-image.png">
+    <!-- Twitter / iMessage -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ISS-in.space — Pass Predictions">
+    <meta name="twitter:description" content="Find out when the International Space Station will fly over your location. Free JSON API included.">
+    <meta name="twitter:image" content="https://iss-in.space/static/img/og-image.png">
+    {% endblock %}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap">
     <link rel="stylesheet" href="/static/css/tachyons.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.usefathom.com/script.js" data-site="BUVXMLRG" defer></script>
