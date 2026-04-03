@@ -332,9 +332,9 @@
                     this.ar.heading = (360 - e.alpha) % 360;
                 }
                 if (e.beta !== null) {
-                    // beta=90 → upright portrait → looking at horizon (elev=0)
-                    // beta=70 → tilted back → looking up 20°
-                    this.ar.tilt = 90 - Math.abs(e.beta);
+                    // beta=90 → upright portrait → horizon (elev=0)
+                    // beta=120 → tilted back → looking up 30°
+                    this.ar.tilt = e.beta - 90;
                 }
             },
             arLoop: function () {
