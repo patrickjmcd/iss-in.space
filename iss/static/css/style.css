@@ -266,3 +266,119 @@ input[type="number"] { -moz-appearance: textfield; }
 
 /* Min-height for location display to prevent layout shift */
 .location-coords-placeholder { min-height: 2.5rem; }
+
+/* === AR OVERLAY === */
+.ar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    touch-action: none;
+}
+
+.ar-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ar-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.ar-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.72), transparent);
+    z-index: 2;
+}
+
+.ar-pass-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.ar-pass-time {
+    color: rgba(255,255,255,0.92);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.ar-pass-quality {
+    font-size: 0.72rem;
+}
+
+.ar-close-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.ar-prompt {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.65);
+    z-index: 3;
+    gap: 20px;
+    padding: 32px;
+    text-align: center;
+}
+
+.ar-prompt-text {
+    color: rgba(255,255,255,0.88);
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.ar-prompt-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 13px 30px;
+    border-radius: 24px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.ar-launch-btn {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 0.75rem;
+    padding: 7px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.ar-launch-btn:active {
+    background: var(--surface-2);
+}

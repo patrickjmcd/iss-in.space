@@ -79,6 +79,9 @@
                         </div>
                     </div>
                 </div>
+                <button v-if="isFuturePass(pred)" class="ar-launch-btn" @click="openAR(pred)">
+                    &#9685; Point me there
+                </button>
                 <div class="flex f7 pt2" style="color:var(--text-3);border-top:1px solid var(--border)">
                     <div class="flex-auto">
                         <div class="ttu tracked mb1">Rise</div>
@@ -155,6 +158,32 @@
 
     </div>
 
+    <!-- AR Overlay -->
+    <div v-if="ar.active" class="ar-overlay">
+        <video ref="arVideo" class="ar-video" autoplay playsinline muted></video>
+        <canvas ref="arCanvas" class="ar-canvas"></canvas>
+
+        <div class="ar-top">
+            <div v-if="ar.pass" class="ar-pass-info">
+                <span class="ar-pass-time">[[ ar.pass.rise.time ]] rise</span>
+                <span v-bind:class="elevationClass(ar.pass.culminate.degrees)" class="ar-pass-quality">
+                    [[ elevationLabel(ar.pass.culminate.degrees) ]] &middot; [[ ar.pass.culminate.degrees ]]&deg; max
+                </span>
+            </div>
+            <button class="ar-close-btn" @click="closeAR">&#10005;</button>
+        </div>
+
+        <div v-if="ar.needsIOSPermission && !ar.error" class="ar-prompt">
+            <p class="ar-prompt-text">Tap below to enable the compass</p>
+            <button class="ar-prompt-btn" @click="requestIOSOrientationPermission">Enable Compass</button>
+        </div>
+
+        <div v-if="ar.error" class="ar-prompt">
+            <p class="ar-prompt-text">[[ ar.error ]]</p>
+            <button class="ar-prompt-btn" @click="closeAR">Close</button>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -164,6 +193,16 @@
         data: {
             predictions: {{ predictions_json|safe }},
             display: { hour24: false, degrees: false },
+            ar: {
+                active: false,
+                pass: null,
+                heading: null,
+                tilt: null,
+                stream: null,
+                animFrame: null,
+                error: null,
+                needsIOSPermission: false,
+            },
         },
         computed: {
             tz: function () {
@@ -177,6 +216,7 @@
                 var hour12 = !this.display.hour24;
                 return JSON.parse(JSON.stringify(this.predictions)).map(function (p) {
                     p.date = new Date(p.rise.time).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+                    p.rise.isoTime = p.rise.time;
                     p.rise.time = new Date(p.rise.time).toLocaleTimeString([], { hour12, hour: '2-digit', minute: '2-digit' });
                     p.culminate.time = new Date(p.culminate.time).toLocaleTimeString([], { hour12, hour: '2-digit', minute: '2-digit' });
                     p.set.time = new Date(p.set.time).toLocaleTimeString([], { hour12, hour: '2-digit', minute: '2-digit' });
@@ -204,6 +244,259 @@
                 if (deg >= 30) return 'Good';
                 if (deg >= 10) return 'Fair';
                 return 'Low';
+            },
+            isFuturePass: function (pred) {
+                return pred.rise.isoTime && new Date(pred.rise.isoTime) > new Date();
+            },
+
+            // --- AR ---
+            openAR: function (pred) {
+                this.ar.pass = pred;
+                this.ar.active = true;
+                this.ar.error = null;
+                this.ar.heading = null;
+                this.ar.tilt = null;
+                this.ar.needsIOSPermission = false;
+                var self = this;
+                this.$nextTick(function () {
+                    self.startARCamera();
+                    self.startAROrientation();
+                    self.arLoop();
+                });
+            },
+            closeAR: function () {
+                this.ar.active = false;
+                if (this.ar.stream) {
+                    this.ar.stream.getTracks().forEach(function (t) { t.stop(); });
+                    this.ar.stream = null;
+                }
+                if (this.ar.animFrame) {
+                    cancelAnimationFrame(this.ar.animFrame);
+                    this.ar.animFrame = null;
+                }
+                if (this._arOrientHandler) {
+                    window.removeEventListener('deviceorientationabsolute', this._arOrientHandler, true);
+                    window.removeEventListener('deviceorientation', this._arOrientHandler, true);
+                    this._arOrientHandler = null;
+                }
+                this.ar.pass = null;
+            },
+            startARCamera: function () {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    this.ar.error = 'Camera not supported on this device.';
+                    return;
+                }
+                var self = this;
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } })
+                    .then(function (stream) {
+                        self.ar.stream = stream;
+                        if (self.$refs.arVideo) self.$refs.arVideo.srcObject = stream;
+                    })
+                    .catch(function () {
+                        self.ar.error = 'Camera permission denied. Please allow camera access to use AR.';
+                    });
+            },
+            startAROrientation: function () {
+                if (typeof DeviceOrientationEvent !== 'undefined' &&
+                    typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    this.ar.needsIOSPermission = true;
+                    return;
+                }
+                this._startOrientListeners();
+            },
+            requestIOSOrientationPermission: function () {
+                var self = this;
+                DeviceOrientationEvent.requestPermission()
+                    .then(function (state) {
+                        if (state === 'granted') {
+                            self.ar.needsIOSPermission = false;
+                            self._startOrientListeners();
+                        } else {
+                            self.ar.error = 'Compass permission denied.';
+                        }
+                    })
+                    .catch(function () {
+                        self.ar.error = 'Could not request compass permission.';
+                    });
+            },
+            _startOrientListeners: function () {
+                var self = this;
+                this._arOrientHandler = function (e) { self.handleOrientation(e); };
+                window.addEventListener('deviceorientationabsolute', this._arOrientHandler, true);
+                window.addEventListener('deviceorientation', this._arOrientHandler, true);
+            },
+            handleOrientation: function (e) {
+                if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
+                    this.ar.heading = e.webkitCompassHeading; // iOS: 0=N, clockwise
+                } else if (e.alpha !== null) {
+                    this.ar.heading = (360 - e.alpha) % 360;
+                }
+                if (e.beta !== null) {
+                    // beta=90 → upright portrait → looking at horizon (elev=0)
+                    // beta=70 → tilted back → looking up 20°
+                    this.ar.tilt = 90 - Math.abs(e.beta);
+                }
+            },
+            arLoop: function () {
+                if (!this.ar.active) return;
+                var canvas = this.$refs.arCanvas;
+                if (canvas) {
+                    if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
+                        canvas.width = canvas.offsetWidth;
+                        canvas.height = canvas.offsetHeight;
+                    }
+                    this.drawAR(canvas.getContext('2d'), canvas.width, canvas.height);
+                }
+                var self = this;
+                this.ar.animFrame = requestAnimationFrame(function () { self.arLoop(); });
+            },
+            drawAR: function (ctx, w, h) {
+                ctx.clearRect(0, 0, w, h);
+                var pass = this.ar.pass;
+                if (!pass) return;
+
+                var COMPASS_H = 72;
+                var viewH = h - COMPASS_H;
+                var heading = this.ar.heading;
+                var tilt = this.ar.tilt;
+                var targetAz = pass.rise.azimuth;
+                var targetEl = 0; // ISS rises at the horizon
+
+                this.drawCompassStrip(ctx, w, h, COMPASS_H, heading, targetAz);
+
+                if (heading === null) {
+                    this.drawLabel(ctx, w / 2, viewH / 2, 'Waiting for compass\u2026', 'rgba(255,255,255,0.7)', '16px');
+                    return;
+                }
+
+                var HFOV = 50, VFOV = 70;
+                var hDiff = targetAz - heading;
+                if (hDiff > 180) hDiff -= 360;
+                if (hDiff < -180) hDiff += 360;
+                var effectiveTilt = tilt !== null ? tilt : 0;
+                var vDiff = targetEl - effectiveTilt;
+
+                var xNorm = hDiff / (HFOV / 2);
+                var yNorm = -vDiff / (VFOV / 2);
+
+                var isAligned = Math.abs(hDiff) < 5 && (tilt === null || Math.abs(vDiff) < 5);
+                var inView = Math.abs(xNorm) < 1.0 && Math.abs(yNorm) < 1.0;
+                var cx = w / 2 + xNorm * (w / 2);
+                var cy = viewH / 2 + yNorm * (viewH / 2);
+
+                if (inView) {
+                    this.drawReticle(ctx, cx, cy, isAligned);
+                } else {
+                    this.drawArrow(ctx, w, viewH, xNorm, yNorm);
+                }
+
+                var textY = viewH - 48;
+                if (isAligned) {
+                    this.drawLabel(ctx, w / 2, textY, '\u2713  Pointed at rise location', '#5fd4f4', '15px');
+                } else {
+                    var parts = [];
+                    if (Math.abs(hDiff) >= 5)
+                        parts.push(hDiff > 0 ? 'Rotate right ' + Math.round(hDiff) + '\u00b0' : 'Rotate left ' + Math.round(-hDiff) + '\u00b0');
+                    if (tilt !== null && Math.abs(vDiff) >= 5)
+                        parts.push(vDiff > 0 ? 'Tilt up ' + Math.round(vDiff) + '\u00b0' : 'Tilt down ' + Math.round(-vDiff) + '\u00b0');
+                    if (parts.length)
+                        this.drawLabel(ctx, w / 2, textY, parts.join('  \u00b7  '), 'rgba(255,255,255,0.9)', '14px');
+                }
+            },
+            drawCompassStrip: function (ctx, w, h, COMPASS_H, heading, targetAz) {
+                var y = h - COMPASS_H;
+                var PX = w / 80; // pixels per degree, showing ±40° from center
+                ctx.fillStyle = 'rgba(0,0,0,0.65)';
+                ctx.fillRect(0, y, w, COMPASS_H);
+                ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+
+                if (heading === null) return;
+
+                var cardinals = { 0: 'N', 45: 'NE', 90: 'E', 135: 'SE', 180: 'S', 225: 'SW', 270: 'W', 315: 'NW' };
+                for (var az = 0; az < 360; az += 5) {
+                    var diff = az - heading;
+                    if (diff > 180) diff -= 360;
+                    if (diff < -180) diff += 360;
+                    var x = w / 2 + diff * PX;
+                    if (x < 0 || x > w) continue;
+                    var isCard = az % 45 === 0, isMajor = az % 10 === 0;
+                    ctx.fillStyle = isCard ? 'rgba(255,255,255,0.75)' : (isMajor ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)');
+                    ctx.fillRect(x - 0.5, y + 6, 1, isCard ? 14 : (isMajor ? 9 : 5));
+                    if (isCard) {
+                        var lbl = cardinals[az];
+                        ctx.fillStyle = az === 0 ? '#ff7b7b' : 'rgba(255,255,255,0.75)';
+                        ctx.font = '11px -apple-system,sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(lbl, x, y + 38);
+                    }
+                }
+
+                // Target marker
+                var td = targetAz - heading;
+                if (td > 180) td -= 360;
+                if (td < -180) td += 360;
+                var tx = w / 2 + td * PX;
+                if (tx >= 8 && tx <= w - 8) {
+                    ctx.fillStyle = '#5fd4f4';
+                    ctx.beginPath();
+                    ctx.moveTo(tx, y + 4); ctx.lineTo(tx - 7, y + 17); ctx.lineTo(tx + 7, y + 17);
+                    ctx.closePath(); ctx.fill();
+                    ctx.font = 'bold 10px -apple-system,sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('ISS', tx, y + COMPASS_H - 6);
+                } else {
+                    ctx.fillStyle = '#5fd4f4';
+                    ctx.font = '18px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(td < 0 ? '\u25c0' : '\u25b6', td < 0 ? 24 : w - 24, y + COMPASS_H / 2 + 6);
+                }
+
+                // Centre tick
+                ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                ctx.fillRect(w / 2 - 1, y, 2, 6);
+            },
+            drawReticle: function (ctx, cx, cy, isAligned) {
+                var R = 38, color = isAligned ? '#5fd4f4' : 'rgba(255,255,255,0.85)';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = isAligned ? 2.5 : 2;
+                ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+                var gap = 10, ext = 18;
+                var lines = [[cx-R-ext,cy,cx-R-gap,cy],[cx+R+gap,cy,cx+R+ext,cy],
+                             [cx,cy-R-ext,cx,cy-R-gap],[cx,cy+R+gap,cx,cy+R+ext]];
+                ctx.beginPath();
+                lines.forEach(function (l) { ctx.moveTo(l[0],l[1]); ctx.lineTo(l[2],l[3]); });
+                ctx.stroke();
+                if (isAligned) {
+                    ctx.fillStyle = '#5fd4f4';
+                    ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = 'rgba(95,212,244,0.25)';
+                    ctx.lineWidth = 10;
+                    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+                }
+            },
+            drawArrow: function (ctx, w, viewH, xNorm, yNorm) {
+                var angle = Math.atan2(yNorm, xNorm);
+                var margin = 70, dist = Math.min(w, viewH) / 2 - margin;
+                ctx.save();
+                ctx.translate(w / 2, viewH / 2);
+                ctx.rotate(angle);
+                ctx.strokeStyle = 'rgba(95,212,244,0.9)';
+                ctx.fillStyle = 'rgba(95,212,244,0.9)';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(20, 0); ctx.lineTo(dist - 18, 0); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(dist,0); ctx.lineTo(dist-16,-9); ctx.lineTo(dist-16,9); ctx.closePath(); ctx.fill();
+                ctx.restore();
+            },
+            drawLabel: function (ctx, x, y, text, color, size) {
+                ctx.font = size + ' -apple-system,BlinkMacSystemFont,sans-serif';
+                ctx.textAlign = 'center';
+                var mw = ctx.measureText(text).width, pad = 12;
+                ctx.fillStyle = 'rgba(0,0,0,0.52)';
+                ctx.fillRect(x - mw/2 - pad, y - 20, mw + pad*2, 30);
+                ctx.fillStyle = color;
+                ctx.fillText(text, x, y);
             },
         },
     });
