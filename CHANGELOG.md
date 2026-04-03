@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.5.1...v1.6.0) (2026-04-03)
+
+
+### Features
+
+* augmented reality ([8d1b8a4](https://github.com/patrickjmcd/iss-in.space/commit/8d1b8a432fabd6b4b43df4cfcfff50e86632f348))
+* augmented reality ([9f14dbd](https://github.com/patrickjmcd/iss-in.space/commit/9f14dbd4cbe3d05b597e57824a9b880f50342c5e))
+
+
+### Bug Fixes
+
+* direction calculation ([8111c25](https://github.com/patrickjmcd/iss-in.space/commit/8111c2516a2ea0817a7632d8f3b2c69196c1add4))
+
 ## [1.5.1](https://github.com/patrickjmcd/iss-in.space/compare/v1.5.0...v1.5.1) (2026-04-03)
 
 
