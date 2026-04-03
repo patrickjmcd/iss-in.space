@@ -35,7 +35,7 @@
         <a href="/" class="f6 dim mt2 no-underline" style="color:var(--text-3)">&larr; Change location</a>
     </div>
 
-    <div class="controls-bar flex flex-wrap items-center mb4 pv2 ph3">
+    <div class="controls-bar flex flex-wrap items-center mb3 pv2 ph3">
         <span class="f7 ttu tracked mr3" style="color:var(--text-3)">Display</span>
         <label class="f6 mr4 flex items-center">
             <input type="checkbox" v-model="display.degrees" class="mr1"> Degrees
@@ -43,14 +43,16 @@
         <label class="f6 flex items-center">
             <input type="checkbox" v-model="display.hour24"> 24h time
         </label>
-        <div class="dn flex-ns flex-wrap items-center ml-auto">
-            <span class="f7 ttu tracked mr2" style="color:var(--text-3)">Elevation</span>
-            <span class="f7 mr2"><span class="elev-excellent">&#9632;</span> <span style="color:var(--text-2)">&ge;60&deg;</span></span>
-            <span class="f7 mr2"><span class="elev-good">&#9632;</span> <span style="color:var(--text-2)">&ge;30&deg;</span></span>
-            <span class="f7 mr2"><span class="elev-avg">&#9632;</span> <span style="color:var(--text-2)">&ge;10&deg;</span></span>
-            <span class="f7"><span class="elev-low">&#9632;</span> <span style="color:var(--text-2)">low</span></span>
-        </div>
     </div>
+
+    <div class="flex flex-wrap items-center mb2 ph3 pb2" style="gap:0.75rem">
+        <span class="f7 ttu tracked" style="color:var(--text-3)">Max elevation</span>
+        <span class="f7"><span class="elev-excellent">&#9632;</span> <span style="color:var(--text-2)">Excellent &mdash; &ge;60&deg;</span></span>
+        <span class="f7"><span class="elev-good">&#9632;</span> <span style="color:var(--text-2)">Good &mdash; &ge;30&deg;</span></span>
+        <span class="f7"><span class="elev-avg">&#9632;</span> <span style="color:var(--text-2)">Fair &mdash; &ge;10&deg;</span></span>
+        <span class="f7"><span class="elev-low">&#9632;</span> <span style="color:var(--text-2)">Low &mdash; &lt;10&deg;</span></span>
+    </div>
+    <p class="f7 mb4 ph1" style="color:var(--text-3)">Higher elevation = brighter &amp; easier to see. Face the Rise direction when the pass starts, then follow it across the sky. The ISS looks like a bright, fast-moving star &mdash; no telescope needed.</p>
 
     <div v-if="Object.keys(groupedPredictions).length === 0" class="tc pv5 f5" style="color:var(--text-2)">
         No passes in the next 5 days.
@@ -69,11 +71,11 @@
                 <div class="flex items-center mb2">
                     <span class="f2 fw7 mr3" v-bind:class="elevationClass(pred.culminate.degrees)">[[ pred.culminate.degrees ]]&deg;</span>
                     <div>
-                        <div class="f7 ttu tracked mb1" style="color:var(--text-3)">Peak elevation</div>
+                        <div class="f7 ttu tracked mb1" style="color:var(--text-3)">Max elevation &mdash; <span v-bind:class="elevationClass(pred.culminate.degrees)">[[ elevationLabel(pred.culminate.degrees) ]]</span></div>
                         <div class="f6" style="color:var(--text-2)">
                             <span v-if="!display.degrees">[[ pred.culminate.direction ]]</span>
                             <span v-else>[[ pred.culminate.azimuth ]]&deg;</span>
-                            &nbsp;&middot;&nbsp;[[ pred.culminate.distance ]] km
+                            &nbsp;&middot;&nbsp;[[ pred.culminate.distance ]] km away
                         </div>
                     </div>
                 </div>
@@ -82,7 +84,7 @@
                         <div class="ttu tracked mb1">Rise</div>
                         <div style="color:var(--text-2)">[[ pred.rise.time ]]</div>
                         <div>
-                            <span v-if="!display.degrees">[[ pred.rise.direction ]]</span>
+                            <span v-if="!display.degrees">Face <strong>[[ pred.rise.direction ]]</strong></span>
                             <span v-else>[[ pred.rise.azimuth ]]&deg;</span>
                         </div>
                     </div>
@@ -91,7 +93,7 @@
                         <div style="color:var(--text-2)">[[ pred.culminate.time ]]</div>
                     </div>
                     <div class="flex-auto">
-                        <div class="ttu tracked mb1">Set</div>
+                        <div class="ttu tracked mb1">Disappears</div>
                         <div style="color:var(--text-2)">[[ pred.set.time ]]</div>
                         <div>
                             <span v-if="!display.degrees">[[ pred.set.direction ]]</span>
@@ -115,11 +117,11 @@
                     <tr class="f7 tl" style="color:var(--text-3)">
                         <th class="pb2 pr3 fw4"></th>
                         <th class="pb2 pr3 fw4">Time</th>
-                        <th class="pb2 pr3 fw4">Dir</th>
+                        <th class="pb2 pr3 fw4">Face this dir</th>
                         <th class="pb2 pr3 fw4">Time</th>
-                        <th class="pb2 pr3 fw4">Elev</th>
+                        <th class="pb2 pr3 fw4">Max elev</th>
                         <th class="pb2 pr3 fw4">Dir</th>
-                        <th class="pb2 pr3 fw4">Dist</th>
+                        <th class="pb2 pr3 fw4">Range (km)</th>
                         <th class="pb2 pr3 fw4">Time</th>
                         <th class="pb2 pr3 fw4">Dir</th>
                     </tr>
@@ -140,7 +142,7 @@
                             <span v-if="!display.degrees">[[ pred.culminate.direction ]]</span>
                             <span v-else>[[ pred.culminate.azimuth ]]&deg;</span>
                         </td>
-                        <td class="pv2 pr3 f6" style="color:var(--text-2)">[[ pred.culminate.distance ]] km</td>
+                        <td class="pv2 pr3 f6" style="color:var(--text-2)">[[ pred.culminate.distance ]]</td>
                         <td class="pv2 pr3">[[ pred.set.time ]]</td>
                         <td class="pv2 pr3 f6" style="color:var(--text-2)">
                             <span v-if="!display.degrees">[[ pred.set.direction ]]</span>
@@ -196,6 +198,12 @@
                 if (deg >= 30) return 'elev-good';
                 if (deg >= 10) return 'elev-avg';
                 return 'elev-low';
+            },
+            elevationLabel: function (deg) {
+                if (deg >= 60) return 'Excellent';
+                if (deg >= 30) return 'Good';
+                if (deg >= 10) return 'Fair';
+                return 'Low';
             },
         },
     });
