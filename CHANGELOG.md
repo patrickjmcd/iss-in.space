@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/patrickjmcd/iss-in.space/compare/v1.5.0...v1.5.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* accessibility and helpful hints ([d9110d4](https://github.com/patrickjmcd/iss-in.space/commit/d9110d482084d6263239738a29eaa750d3913a37))
+
 ## [1.5.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.4.0...v1.5.0) (2026-03-27)
 
 
