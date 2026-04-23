@@ -1,6 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import PassesApp from '../../../components/PassesApp.vue';
+import { fetchTLE, parseTLE, getPasses } from '../../../lib/predictions';
 
 const { lat, lng } = Astro.params;
 const latNum = parseFloat(lat!);
@@ -18,16 +19,15 @@ function displayLatLng(lat: number, lng: number) {
 
 const { dlat, dlng } = displayLatLng(latNum, lngNum);
 
-const apiUrl = import.meta.env.API_URL ?? 'http://localhost:8000';
 let predictions: any[] = [];
 let error: string | null = null;
 
 try {
-  const res = await fetch(`${apiUrl}/api/passes/${latNum}/${lngNum}`);
-  if (!res.ok) throw new Error(`API returned ${res.status}`);
-  predictions = await res.json();
+  const tleText = await fetchTLE();
+  const { tle1, tle2 } = parseTLE(tleText);
+  predictions = getPasses(tle1, tle2, latNum, lngNum);
 } catch (e: any) {
-  error = e?.message ?? 'Failed to load pass predictions';
+  error = e?.message ?? 'Failed to compute pass predictions';
 }
 
 const pageTitle = `ISS passes for ${dlat}, ${dlng}`;
