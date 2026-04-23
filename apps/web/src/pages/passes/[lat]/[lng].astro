@@ -1,0 +1,48 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import PassesApp from '../../../components/PassesApp.vue';
+
+const { lat, lng } = Astro.params;
+const latNum = parseFloat(lat!);
+const lngNum = parseFloat(lng!);
+
+if (isNaN(latNum) || isNaN(lngNum)) {
+  return Astro.redirect('/');
+}
+
+function displayLatLng(lat: number, lng: number) {
+  const dlat = `${Math.abs(lat)}°${lat > 0 ? 'N' : 'S'}`;
+  const dlng = `${Math.abs(lng)}°${lng > 0 ? 'E' : 'W'}`;
+  return { dlat, dlng };
+}
+
+const { dlat, dlng } = displayLatLng(latNum, lngNum);
+
+const apiUrl = import.meta.env.API_URL ?? 'http://localhost:8000';
+let predictions: any[] = [];
+let error: string | null = null;
+
+try {
+  const res = await fetch(`${apiUrl}/api/passes/${latNum}/${lngNum}`);
+  if (!res.ok) throw new Error(`API returned ${res.status}`);
+  predictions = await res.json();
+} catch (e: any) {
+  error = e?.message ?? 'Failed to load pass predictions';
+}
+
+const pageTitle = `ISS passes for ${dlat}, ${dlng}`;
+const pageDesc = `Upcoming ISS overhead passes for ${dlat}, ${dlng} — times, directions, and max elevation for the next 5 days.`;
+const pageUrl = `https://iss-in.space/passes/${latNum}/${lngNum}`;
+---
+
+<Layout title={pageTitle} ogTitle={pageTitle} ogDescription={pageDesc} ogUrl={pageUrl}>
+  {error ? (
+    <div class="tc pv5 f5" style="color:var(--text-2)">
+      <p>Could not load pass predictions.</p>
+      <p class="f6" style="color:var(--text-3)">{error}</p>
+      <a href="/" class="f6 dim" style="color:var(--accent)">&larr; Back</a>
+    </div>
+  ) : (
+    <PassesApp predictions={predictions} dlat={dlat} dlng={dlng} lat={latNum} lng={lngNum} client:only="vue" />
+  )}
+</Layout>

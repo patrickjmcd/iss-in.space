@@ -1,0 +1,173 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+let ipLocation = { lat: null as number | null, lng: null as number | null, tz: '' };
+
+try {
+  const cf = (Astro.locals as any).runtime?.cf;
+  if (cf?.latitude && cf?.longitude) {
+    ipLocation = {
+      lat: parseFloat(cf.latitude),
+      lng: parseFloat(cf.longitude),
+      tz: cf.timezone ?? '',
+    };
+  }
+} catch {}
+---
+
+<Layout>
+  <!-- Location + CTA -->
+  <div class="mb4">
+    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Detected location</p>
+    <p class="f3 fw7 mb1 location-coords-placeholder" id="location-coords" style="color:var(--text-1)"></p>
+    <p class="f6 mb3" id="location-tz" style="color:var(--text-2)"></p>
+    <a id="view-passes-btn" class="btn-primary" style="display:none">View Passes &rarr;</a>
+  </div>
+
+  <hr class="divider mt4 mb4">
+
+  <!-- Manual coordinates -->
+  <div class="mb4">
+    <p class="f7 ttu tracked mb3" style="color:var(--text-3)">Enter coordinates manually</p>
+    <div class="flex flex-wrap items-end gap">
+      <div class="mr3 mb2">
+        <label class="f7 ttu tracked db mb1" style="color:var(--text-3)" for="lat">Latitude</label>
+        <input id="lat" type="number" step="any" min="-90" max="90" placeholder="37.7749" class="f5 pa2 w4" />
+      </div>
+      <div class="mr3 mb2">
+        <label class="f7 ttu tracked db mb1" style="color:var(--text-3)" for="lng">Longitude</label>
+        <input id="lng" type="number" step="any" min="-180" max="180" placeholder="-122.4194" class="f5 pa2 w4" />
+      </div>
+      <div class="mb2">
+        <button class="btn-secondary f5" onclick="navigateToCoords(document.getElementById('lat').value, document.getElementById('lng').value)">
+          Go &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider mt4 mb4">
+
+  <!-- About -->
+  <div class="mb4">
+    <p class="f7 ttu tracked mb3" style="color:var(--text-3)">About</p>
+    <p class="f5 lh-copy mb3" style="color:var(--text-2)">
+      ISS-in.space predicts when the
+      <a href="https://en.wikipedia.org/wiki/International_Space_Station" target="_blank" rel="noopener" style="color:var(--accent)">International Space Station</a>
+      will pass overhead at your location for the next 5 days &mdash; useful for both visual observation and amateur radio passes (AOS/LOS times, azimuth, max elevation).
+    </p>
+    <div class="flex flex-wrap">
+      <div class="w-100 w-50-ns pr3-ns mb3">
+        <p class="f7 ttu tracked mb2" style="color:var(--text-3)">Reading the table</p>
+        <ul class="f6 lh-copy pl3 mb0" style="color:var(--text-2)">
+          <li class="mb1"><strong style="color:var(--text-1)">Rise / Set</strong> &mdash; when the ISS crosses the horizon and in which direction</li>
+          <li class="mb1"><strong style="color:var(--text-1)">Peak elevation</strong> &mdash; how high it gets; higher = brighter and longer visible. Passes below ~10&deg; are hard to see</li>
+          <li class="mb1"><strong style="color:var(--text-1)">Distance</strong> &mdash; slant range at peak (line-of-sight, not orbital altitude)</li>
+          <li><strong style="color:var(--text-1)">Duration</strong> &mdash; total time above the horizon</li>
+        </ul>
+      </div>
+      <div class="w-100 w-50-ns pl3-ns mb3" style="border-left:1px solid var(--border)">
+        <p class="f7 ttu tracked mb2" style="color:var(--text-3)">How it works</p>
+        <ul class="f6 lh-copy pl3 mb0" style="color:var(--text-2)">
+          <li class="mb1">Orbital data (TLE) is fetched from <a href="https://celestrak.org" target="_blank" rel="noopener" style="color:var(--accent)">Celestrak</a> and cached for 2 hours</li>
+          <li class="mb1">Pass times are calculated using <a href="https://rhodesmill.org/skyfield/" target="_blank" rel="noopener" style="color:var(--accent)">Skyfield</a> with the SGP4 propagation model &mdash; the same standard used by NORAD</li>
+          <li>All times are localized to your browser&apos;s timezone</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider mt4 mb4">
+
+  <!-- API -->
+  <div class="mb4">
+    <p class="f7 ttu tracked mb3" style="color:var(--text-3)">API</p>
+    <p class="f6 lh-copy mb3" style="color:var(--text-2)">
+      Pass predictions are available as JSON. No authentication required.
+      Rate limited to 30 requests/minute per IP.
+    </p>
+
+    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Endpoint</p>
+    <pre class="f6 pa3 br2 mb3 overflow-x-auto" style="background:var(--surface);border:1px solid var(--border);color:var(--text-1)">GET /api/passes/{'{lat}'}/{'{lng}'}</pre>
+
+    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Example</p>
+    <pre class="f6 pa3 br2 mb3 overflow-x-auto" style="background:var(--surface);border:1px solid var(--border);color:var(--text-1)">curl https://iss-in.space/api/passes/28.3922/-80.6077</pre>
+
+    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Response</p>
+    <pre class="f6 pa3 br2 overflow-x-auto" style="background:var(--surface);border:1px solid var(--border);color:var(--text-1)">{`[
+  {
+    "length": 427,
+    "length_mins": "7:07",
+    "rise":      { "time": "2026-03-27T00:15:22Z", "degrees": 0,  "azimuth": 214, "direction": "SW", "distance": 2621 },
+    "culminate": { "time": "2026-03-27T00:18:35Z", "degrees": 43, "azimuth": 142, "direction": "SE", "distance": 559  },
+    "set":       { "time": "2026-03-27T00:21:49Z", "degrees": 0,  "azimuth": 71,  "direction": "ENE","distance": 2583 }
+  }
+]`}</pre>
+
+    <div class="mt3">
+      <p class="f7 ttu tracked mb2" style="color:var(--text-3)">Fields</p>
+      <table class="f6 w-100 collapse" style="border-spacing:0;color:var(--text-2)">
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td class="pv1 pr3 fw7" style="color:var(--text-1);white-space:nowrap">length</td>
+            <td class="pv1">Pass duration in seconds</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td class="pv1 pr3 fw7" style="color:var(--text-1);white-space:nowrap">length_mins</td>
+            <td class="pv1">Pass duration as <code style="color:var(--accent)">m:ss</code></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td class="pv1 pr3 fw7" style="color:var(--text-1);white-space:nowrap">rise / culminate / set</td>
+            <td class="pv1">Event objects, each with <code style="color:var(--accent)">time</code> (ISO 8601 UTC), <code style="color:var(--accent)">degrees</code> (elevation), <code style="color:var(--accent)">azimuth</code> (0&ndash;360&deg;), <code style="color:var(--accent)">direction</code> (cardinal), <code style="color:var(--accent)">distance</code> (km slant range)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script define:vars={{ ipLocation }} is:inline>
+    function navigateToCoords(lat, lng) {
+      var la = parseFloat(lat), lo = parseFloat(lng);
+      if (!isNaN(la) && !isNaN(lo)) window.location = '/passes/' + la + '/' + lo;
+    }
+
+    function showLocation(lat, lng, tz) {
+      document.getElementById('location-coords').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+      document.getElementById('location-tz').textContent = tz || '';
+      var btn = document.getElementById('view-passes-btn');
+      btn.href = '/passes/' + lat + '/' + lng;
+      btn.style.display = '';
+    }
+
+    function onGeoSuccess(pos) {
+      showLocation(
+        pos.coords.latitude,
+        pos.coords.longitude,
+        Intl.DateTimeFormat().resolvedOptions().timeZone
+      );
+    }
+
+    function onGeoError() {
+      if (ipLocation.lat !== null) {
+        showLocation(ipLocation.lat, ipLocation.lng, ipLocation.tz);
+      } else {
+        document.getElementById('location-coords').textContent = 'Location unavailable';
+      }
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoError, { timeout: 8000 });
+    } else {
+      onGeoError();
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        navigateToCoords(
+          document.getElementById('lat').value,
+          document.getElementById('lng').value
+        );
+      }
+    });
+  </script>
+</Layout>
