@@ -89,6 +89,12 @@ function goldenSectionMax(satrec: SatRec, observerGd: ObserverGd, t1: number, t2
   return (lo + hi) / 2;
 }
 
+const FETCH_TIMEOUT_MS = 8000;
+// Kept alongside the fresh entry so a Celestrak outage can still be served
+// a (stale but usable) TLE instead of failing the request outright.
+const STALE_CACHE_KEY = new Request(`${TLE_URL}#stale`);
+const STALE_MAX_AGE_SECS = 30 * 24 * 60 * 60; // 30 days
+
 export async function fetchTLE(): Promise<string> {
   // Use Cache API when available (Cloudflare Workers runtime)
   const cacheKey = new Request(TLE_URL);
@@ -99,19 +105,34 @@ export async function fetchTLE(): Promise<string> {
     if (cached) return cached.text();
   } catch {}
 
-  const res = await fetch(TLE_URL);
-  if (!res.ok) throw new Error(`Celestrak returned ${res.status}`);
-  const text = await res.text();
-
-  // Cache for 2 hours
-  if (cache) {
-    const response = new Response(text, {
-      headers: { 'Cache-Control': 'public, max-age=7200' },
+  try {
+    const res = await fetch(TLE_URL, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      // Celestrak's usage policy asks automated clients to identify themselves.
+      headers: { 'User-Agent': 'iss-in-space/1.0 (+https://iss-in.space)' },
     });
-    cache.put(cacheKey, response);
-  }
+    if (!res.ok) throw new Error(`Celestrak returned ${res.status}`);
+    const text = await res.text();
 
-  return text;
+    if (cache) {
+      // Cache for 2 hours
+      cache.put(cacheKey, new Response(text, {
+        headers: { 'Cache-Control': 'public, max-age=7200' },
+      }));
+      // Long-lived fallback used if a future fetch fails.
+      cache.put(STALE_CACHE_KEY, new Response(text, {
+        headers: { 'Cache-Control': `public, max-age=${STALE_MAX_AGE_SECS}` },
+      }));
+    }
+
+    return text;
+  } catch (e) {
+    if (cache) {
+      const stale = await cache.match(STALE_CACHE_KEY);
+      if (stale) return stale.text();
+    }
+    throw e;
+  }
 }
 
 export function parseTLE(tleText: string): { tle1: string; tle2: string } {
