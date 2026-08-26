@@ -9,6 +9,8 @@ import {
 } from 'satellite.js';
 
 const TLE_URL = 'https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE';
+// Fallback when Celestrak is unreachable: same NORAD catalog data, no API key required.
+const WHERETHEISS_URL = 'https://api.wheretheiss.at/v1/satellites/25544/tles';
 const SCAN_STEP_MS = 30 * 1000;   // 30-second coarse scan
 const DAYS = 5;
 
@@ -103,29 +105,49 @@ let freshFetchedAt = 0;
 // Celestrak outage can still be served a stale-but-usable TLE.
 let staleText: string | null = null;
 
+async function fetchFromCelestrak(): Promise<string> {
+  const res = await fetch(TLE_URL, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    // Celestrak's usage policy asks automated clients to identify themselves.
+    headers: { 'User-Agent': 'iss-in-space/1.0 (+https://iss-in.space)' },
+  });
+  if (!res.ok) throw new Error(`Celestrak returned ${res.status}`);
+  return res.text();
+}
+
+async function fetchFromWhereTheIss(): Promise<string> {
+  const res = await fetch(WHERETHEISS_URL, {
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    headers: { 'User-Agent': 'iss-in-space/1.0 (+https://iss-in.space)' },
+  });
+  if (!res.ok) throw new Error(`wheretheiss.at returned ${res.status}`);
+  const { line1, line2 } = await res.json() as { line1?: string; line2?: string };
+  if (!line1 || !line2) throw new Error('wheretheiss.at response missing TLE lines');
+  // Reassembled as a 3-line TLE block so it flows through parseTLE() unchanged.
+  return `ISS (ZARYA)\n${line1}\n${line2}`;
+}
+
 export async function fetchTLE(): Promise<string> {
   if (freshText && Date.now() - freshFetchedAt < FRESH_TTL_MS) {
     return freshText;
   }
 
+  let text: string;
   try {
-    const res = await fetch(TLE_URL, {
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      // Celestrak's usage policy asks automated clients to identify themselves.
-      headers: { 'User-Agent': 'iss-in-space/1.0 (+https://iss-in.space)' },
-    });
-    if (!res.ok) throw new Error(`Celestrak returned ${res.status}`);
-    const text = await res.text();
-
-    freshText = text;
-    freshFetchedAt = Date.now();
-    staleText = text;
-
-    return text;
-  } catch (e) {
-    if (staleText) return staleText;
-    throw e;
+    text = await fetchFromCelestrak();
+  } catch (celestrakError) {
+    try {
+      text = await fetchFromWhereTheIss();
+    } catch {
+      if (staleText) return staleText;
+      throw celestrakError;
+    }
   }
+
+  freshText = text;
+  freshFetchedAt = Date.now();
+  staleText = text;
+  return text;
 }
 
 export function parseTLE(tleText: string): { tle1: string; tle2: string } {
