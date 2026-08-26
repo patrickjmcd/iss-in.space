@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.6.0...v1.7.0) (2026-08-26)
+
+
+### Features
+
+* add Astro frontend in apps/web ([ddf5605](https://github.com/patrickjmcd/iss-in.space/commit/ddf5605ec6db2c1d8438a294a224b68bb00a3941))
+* port ISS orbital calculations to JS with satellite.js ([f21ea3b](https://github.com/patrickjmcd/iss-in.space/commit/f21ea3bf85f680b8d45c4ff211c1cf90ad8e1531))
+
+
+### Bug Fixes
+
+* harden TLE fetch against upstream Celestrak outages ([5373f30](https://github.com/patrickjmcd/iss-in.space/commit/5373f30d723f9f22956f79ebdd6529b617f273ed))
+
 ## [1.6.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.5.1...v1.6.0) (2026-04-03)
 
 
