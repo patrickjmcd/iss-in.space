@@ -90,20 +90,23 @@ function goldenSectionMax(satrec: SatRec, observerGd: ObserverGd, t1: number, t2
 }
 
 const FETCH_TIMEOUT_MS = 8000;
-// Kept alongside the fresh entry so a Celestrak outage can still be served
-// a (stale but usable) TLE instead of failing the request outright.
-const STALE_CACHE_KEY = new Request(`${TLE_URL}#stale`);
-const STALE_MAX_AGE_SECS = 30 * 24 * 60 * 60; // 30 days
+// Matches Celestrak's usage policy: GP data is only updated every 2 hours,
+// so polling more often than that just wastes their bandwidth.
+const FRESH_TTL_MS = 2 * 60 * 60 * 1000;
+
+// Per-process in-memory cache. Node has no Cloudflare Cache API, so this
+// holds state for the lifetime of the running pod; each replica fetches
+// independently, and state resets on restart.
+let freshText: string | null = null;
+let freshFetchedAt = 0;
+// Kept indefinitely (until replaced by a newer successful fetch) so a
+// Celestrak outage can still be served a stale-but-usable TLE.
+let staleText: string | null = null;
 
 export async function fetchTLE(): Promise<string> {
-  // Use Cache API when available (Cloudflare Workers runtime)
-  const cacheKey = new Request(TLE_URL);
-  let cache: Cache | null = null;
-  try {
-    cache = await caches.open('tle-cache');
-    const cached = await cache.match(cacheKey);
-    if (cached) return cached.text();
-  } catch {}
+  if (freshText && Date.now() - freshFetchedAt < FRESH_TTL_MS) {
+    return freshText;
+  }
 
   try {
     const res = await fetch(TLE_URL, {
@@ -114,23 +117,13 @@ export async function fetchTLE(): Promise<string> {
     if (!res.ok) throw new Error(`Celestrak returned ${res.status}`);
     const text = await res.text();
 
-    if (cache) {
-      // Cache for 2 hours
-      cache.put(cacheKey, new Response(text, {
-        headers: { 'Cache-Control': 'public, max-age=7200' },
-      }));
-      // Long-lived fallback used if a future fetch fails.
-      cache.put(STALE_CACHE_KEY, new Response(text, {
-        headers: { 'Cache-Control': `public, max-age=${STALE_MAX_AGE_SECS}` },
-      }));
-    }
+    freshText = text;
+    freshFetchedAt = Date.now();
+    staleText = text;
 
     return text;
   } catch (e) {
-    if (cache) {
-      const stale = await cache.match(STALE_CACHE_KEY);
-      if (stale) return stale.text();
-    }
+    if (staleText) return staleText;
     throw e;
   }
 }
