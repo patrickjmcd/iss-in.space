@@ -4,6 +4,8 @@
 
 Built in Python using [Skyfield](https://rhodesmill.org/skyfield/) and [FastAPI](https://fastapi.tiangolo.com/).
 
+> Initially based on [iss.guru](https://github.com/yuvadm/iss.guru) by [@yuvadm](https://github.com/yuvadm).
+
 ## API
 
 ### `GET /api/passes/{lat}/{lng}`

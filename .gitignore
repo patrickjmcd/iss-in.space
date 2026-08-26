@@ -2,3 +2,10 @@
 __pycache__
 stations.txt
 !iss/tests/data/stations.txt
+**/node_modules/
+**/.next/
+**/.env
+**/.env.local
+apps/web/dist/
+apps/web/.astro/
+apps/web/.wrangler/

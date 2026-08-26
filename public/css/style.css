@@ -1,0 +1,384 @@
+
+
+/* === THEME VARIABLES === */
+:root {
+    --bg:          #0e1016;
+    --surface:     #161b24;
+    --surface-2:   #1e2330;
+    --border:      #2a303e;
+    --text-1:      #dce1ec;
+    --text-2:      #8c96ab;
+    --text-3:      #545e72;
+    --accent:      #5c9ee8;
+    --accent-bg:   #1a2e4a;
+    --accent-hover:#4a8cd6;
+    --elev-excellent: #5fd4f4;
+    --elev-good:      #3ec487;
+    --elev-avg:       #8c96ab;
+    --elev-low:       #6b7891;
+    --row-hover:   rgba(255, 255, 255, 0.04);
+    --toggle-bg:   #1e2330;
+    --toggle-border: #3a4256;
+}
+
+[data-theme="light"] {
+    --bg:          #f4f6fb;
+    --surface:     #ffffff;
+    --surface-2:   #e8ecf4;
+    --border:      #cdd4e0;
+    --text-1:      #1a1f2e;
+    --text-2:      #445068;
+    --text-3:      #8a95a8;
+    --accent:      #1d5fa8;
+    --accent-bg:   #ddeeff;
+    --accent-hover:#164d8a;
+    --elev-excellent: #0e8fad;
+    --elev-good:      #1a7a50;
+    --elev-avg:       #445068;
+    --elev-low:       #8a95a8;
+    --row-hover:   rgba(0, 0, 0, 0.04);
+    --toggle-bg:   #e8ecf4;
+    --toggle-border: #c0c8d8;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+        --bg:          #f4f6fb;
+        --surface:     #ffffff;
+        --surface-2:   #e8ecf4;
+        --border:      #cdd4e0;
+        --text-1:      #1a1f2e;
+        --text-2:      #445068;
+        --text-3:      #8a95a8;
+        --accent:      #1d5fa8;
+        --accent-bg:   #ddeeff;
+        --accent-hover:#164d8a;
+        --elev-excellent: #0a6e8a;
+        --elev-good:      #1a7a50;
+        --elev-avg:       #445068;
+        --elev-low:       #556275;
+        --row-hover:   rgba(0, 0, 0, 0.04);
+        --toggle-bg:   #e8ecf4;
+        --toggle-border: #c0c8d8;
+    }
+}
+
+/* === BASE === */
+* { box-sizing: border-box; }
+
+body {
+    font-family: "IBM Plex Mono", monospace;
+    background-color: var(--bg);
+    color: var(--text-1);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+a { color: var(--accent); }
+a:hover { color: var(--accent-hover); }
+
+hr { border-color: var(--border); }
+
+/* === TACHYONS OVERRIDES === */
+/* Body classes */
+.bg-near-black { background-color: var(--bg) !important; }
+.near-white     { color: var(--text-1) !important; }
+.moon-gray,
+.mid-gray,
+.light-gray,
+.light-silver,
+.silver         { color: var(--text-2) !important; }
+.dark-gray      { color: var(--text-3) !important; }
+.light-blue     { color: var(--accent) !important; }
+.dark-navy      { color: var(--text-1) !important; }
+
+/* Backgrounds */
+.bg-dark-gray   { background-color: var(--surface-2) !important; }
+.bg-dark-blue   { background-color: var(--accent-bg) !important; }
+.hover-bg-blue:hover  { background-color: var(--accent) !important; }
+.hover-bg-mid-gray:hover { background-color: var(--surface-2) !important; }
+
+/* Borders */
+.b--dark-gray   { border-color: var(--border) !important; }
+
+/* Tachyons link dimming override for themed links */
+.link { color: inherit; }
+.link.light-blue { color: var(--accent) !important; }
+
+/* === ELEVATION CLASSES === */
+.elev-excellent { color: var(--elev-excellent); }
+.elev-good      { color: var(--elev-good); }
+.elev-avg       { color: var(--elev-avg); }
+.elev-low       { color: var(--elev-low); }
+
+/* === THEME TOGGLE === */
+.theme-toggle {
+    background: var(--toggle-bg);
+    border: 1px solid var(--toggle-border);
+    color: var(--text-2);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.theme-toggle:hover {
+    background: var(--surface-2);
+    color: var(--text-1);
+    border-color: var(--text-3);
+}
+
+/* === COMPONENTS === */
+
+/* Inputs */
+input[type="number"],
+input[type="text"] {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    font-family: "IBM Plex Mono", monospace;
+    border-radius: 4px;
+    transition: border-color 0.15s;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
+/* Buttons */
+.btn-primary {
+    display: inline-block;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.btn-primary:hover {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+.btn-secondary {
+    display: inline-block;
+    background: var(--surface-2);
+    color: var(--text-2);
+    border: 1px solid var(--border);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.btn-secondary:hover {
+    color: var(--text-1);
+    border-color: var(--text-3);
+}
+
+/* Controls bar */
+.controls-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.controls-bar label {
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 0.1s;
+}
+
+.controls-bar label:hover {
+    color: var(--text-1);
+}
+
+/* Table */
+.passes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.passes-table th {
+    color: var(--text-3);
+    font-weight: 400;
+    border-bottom: 1px solid var(--border);
+}
+
+.passes-table td {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+}
+
+.passes-table tr:last-child td {
+    border-bottom: none;
+}
+
+.passes-table tbody tr:hover td {
+    background: var(--row-hover);
+}
+
+/* Date group header */
+.date-header {
+    color: var(--text-3);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0;
+}
+
+/* Divider */
+.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+}
+
+/* Surface card */
+.surface {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.gap { gap: 0.5rem; }
+
+/* Min-height for location display to prevent layout shift */
+.location-coords-placeholder { min-height: 2.5rem; }
+
+/* === AR OVERLAY === */
+.ar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    touch-action: none;
+}
+
+.ar-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ar-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.ar-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.72), transparent);
+    z-index: 2;
+}
+
+.ar-pass-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.ar-pass-time {
+    color: rgba(255,255,255,0.92);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.ar-pass-quality {
+    font-size: 0.72rem;
+}
+
+.ar-close-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.ar-prompt {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.65);
+    z-index: 3;
+    gap: 20px;
+    padding: 32px;
+    text-align: center;
+}
+
+.ar-prompt-text {
+    color: rgba(255,255,255,0.88);
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.ar-prompt-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 13px 30px;
+    border-radius: 24px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.ar-launch-btn {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 0.75rem;
+    padding: 7px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.ar-launch-btn:active {
+    background: var(--surface-2);
+}
