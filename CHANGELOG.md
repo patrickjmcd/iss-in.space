@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/patrickjmcd/iss-in.space/compare/v1.9.0...v1.9.1) (2026-08-26)
+
+
+### Bug Fixes
+
+* fall back to wheretheiss.at when Celestrak is unreachable ([24c49b1](https://github.com/patrickjmcd/iss-in.space/commit/24c49b19a110c3220c9700bc21eeacf8450a4d75))
+
 ## [1.9.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.8.0...v1.9.0) (2026-08-26)
 
 
