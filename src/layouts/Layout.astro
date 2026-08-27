@@ -1,4 +1,7 @@
 ---
+import '../styles/global.css';
+import { Button } from '../components/ui/button';
+
 interface Props {
   title?: string;
   description?: string;
@@ -38,9 +41,6 @@ const {
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap">
-  <link rel="stylesheet" href="/css/tachyons.min.css">
-  <link rel="stylesheet" href="/css/style.css">
 
   <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="/img/favicon.ico" sizes="any">
@@ -54,21 +54,28 @@ const {
 
   <script is:inline>
     (function () {
-      var t = localStorage.getItem('iss-theme');
-      if (t) document.documentElement.setAttribute('data-theme', t);
+      var saved = localStorage.getItem('iss-theme');
+      var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', dark);
     })();
   </script>
 
   <slot name="head" />
 </head>
 
-<body class="min-vh-100 flex flex-column">
-  <div class="pa3 pa4-ns mw8 center w-100 flex-auto">
-    <header class="mb4 pb3 bb b--dark-gray flex items-center justify-between">
-      <a href="/" class="no-underline dim flex items-baseline" style="color:inherit">
-        <span class="f2 fw7 tracked-tight" style="color:var(--text-1)">ISS</span><span class="f2 fw4" style="color:var(--text-3)">-in.space</span>
+<body class="min-h-screen flex flex-col">
+  <div class="p-4 sm:p-6 max-w-4xl mx-auto w-full flex-auto">
+    <header class="mb-8 pb-4 border-b flex items-center justify-between">
+      <a href="/" class="no-underline flex items-baseline hover:opacity-80 transition-opacity">
+        <span class="text-2xl font-bold tracking-tight text-foreground">ISS</span><span class="text-2xl font-normal text-muted-foreground">-in.space</span>
       </a>
-      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"></button>
+      <Button
+        id="theme-toggle"
+        onclick="toggleTheme()"
+        aria-label="Toggle theme"
+        variant="outline"
+        size="sm"
+      ></Button>
     </header>
 
     <main>
@@ -76,32 +83,28 @@ const {
     </main>
   </div>
 
-  <footer class="pa3 pa4-ns mw8 center w-100 mt4" style="border-top:1px solid var(--border)">
-    <p class="f7 mb0" style="color:var(--text-3)">
-      By <a href="https://github.com/patrickjmcd" class="dim" style="color:var(--text-2)" target="_blank" rel="noopener">patrickjmcd</a>.
-      Source on <a href="https://github.com/patrickjmcd/iss-in.space" class="dim" style="color:var(--text-2)" target="_blank" rel="noopener">GitHub</a>.
-      TLE data from <a href="https://celestrak.org" class="dim" style="color:var(--text-2)" target="_blank" rel="noopener">Celestrak</a>.
+  <footer class="p-4 sm:p-6 max-w-4xl mx-auto w-full mt-8 border-t">
+    <p class="text-xs text-muted-foreground">
+      By <a href="https://github.com/patrickjmcd" class="text-foreground hover:text-primary transition-colors" target="_blank" rel="noopener">patrickjmcd</a>.
+      Source on <a href="https://github.com/patrickjmcd/iss-in.space" class="text-foreground hover:text-primary transition-colors" target="_blank" rel="noopener">GitHub</a>.
+      TLE data from <a href="https://celestrak.org" class="text-foreground hover:text-primary transition-colors" target="_blank" rel="noopener">Celestrak</a>.
     </p>
   </footer>
 
   <script is:inline>
-    var DARK = 'dark', LIGHT = 'light';
-
     function getEffectiveTheme() {
-      var saved = document.documentElement.getAttribute('data-theme');
-      if (saved) return saved;
-      return window.matchMedia('(prefers-color-scheme: light)').matches ? LIGHT : DARK;
+      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     }
 
     function applyToggleLabel() {
       var btn = document.getElementById('theme-toggle');
       if (!btn) return;
-      btn.textContent = getEffectiveTheme() === DARK ? '☀ light' : '◑ dark';
+      btn.textContent = getEffectiveTheme() === 'dark' ? '☀ light' : '◑ dark';
     }
 
     function toggleTheme() {
-      var next = getEffectiveTheme() === DARK ? LIGHT : DARK;
-      document.documentElement.setAttribute('data-theme', next);
+      var next = getEffectiveTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.classList.toggle('dark', next === 'dark');
       localStorage.setItem('iss-theme', next);
       applyToggleLabel();
     }

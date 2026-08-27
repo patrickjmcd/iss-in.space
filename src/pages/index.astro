@@ -1,5 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { Separator } from '../components/ui/separator';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 let ipLocation = { lat: null as number | null, lng: null as number | null, tz: '' };
 
@@ -17,84 +20,85 @@ try {
 
 <Layout>
   <!-- Location + CTA -->
-  <div class="mb4">
-    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Detected location</p>
-    <p class="f3 fw7 mb1 location-coords-placeholder" id="location-coords" style="color:var(--text-1)"></p>
-    <p class="f6 mb3" id="location-tz" style="color:var(--text-2)"></p>
-    <a id="view-passes-btn" class="btn-primary" style="display:none">View Passes &rarr;</a>
+  <div class="mb-8">
+    <p class="text-xs uppercase tracking-wider text-muted-foreground mb-1">Detected location</p>
+    <p class="text-2xl font-bold mb-1 min-h-10" id="location-coords"></p>
+    <p class="text-sm text-muted-foreground mb-3" id="location-tz"></p>
+    <Button as="a" id="view-passes-btn" style="display:none" size="lg">View Passes &rarr;</Button>
   </div>
 
-  <hr class="divider mt4 mb4">
+  <Separator class="my-8" />
 
   <!-- Manual coordinates -->
-  <div class="mb4">
-    <p class="f7 ttu tracked mb3" style="color:var(--text-3)">Enter coordinates manually</p>
-    <div class="flex flex-wrap items-end gap">
-      <div class="mr3 mb2">
-        <label class="f7 ttu tracked db mb1" style="color:var(--text-3)" for="lat">Latitude</label>
-        <input id="lat" type="number" step="any" min="-90" max="90" placeholder="37.7749" class="f5 pa2 w4" />
+  <div class="mb-8">
+    <p class="text-xs uppercase tracking-wider text-muted-foreground mb-3">Enter coordinates manually</p>
+    <div class="flex flex-wrap items-end gap-3">
+      <div>
+        <label class="block text-xs uppercase tracking-wider text-muted-foreground mb-1" for="lat">Latitude</label>
+        <Input id="lat" type="number" step="any" min="-90" max="90" placeholder="37.7749" class="w-32" />
       </div>
-      <div class="mr3 mb2">
-        <label class="f7 ttu tracked db mb1" style="color:var(--text-3)" for="lng">Longitude</label>
-        <input id="lng" type="number" step="any" min="-180" max="180" placeholder="-122.4194" class="f5 pa2 w4" />
+      <div>
+        <label class="block text-xs uppercase tracking-wider text-muted-foreground mb-1" for="lng">Longitude</label>
+        <Input id="lng" type="number" step="any" min="-180" max="180" placeholder="-122.4194" class="w-32" />
       </div>
-      <div class="mb2">
-        <button class="btn-secondary f5" onclick="navigateToCoords(document.getElementById('lat').value, document.getElementById('lng').value)">
-          Go &rarr;
-        </button>
-      </div>
+      <Button
+        variant="outline"
+        onclick="navigateToCoords(document.getElementById('lat').value, document.getElementById('lng').value)"
+      >
+        Go &rarr;
+      </Button>
     </div>
   </div>
 
-  <hr class="divider mt4 mb4">
+  <Separator class="my-8" />
 
   <!-- About -->
-  <div class="mb4">
-    <p class="f7 ttu tracked mb3" style="color:var(--text-3)">About</p>
-    <p class="f5 lh-copy mb3" style="color:var(--text-2)">
+  <div class="mb-8">
+    <p class="text-xs uppercase tracking-wider text-muted-foreground mb-3">About</p>
+    <p class="text-base leading-relaxed text-muted-foreground mb-3">
       ISS-in.space predicts when the
-      <a href="https://en.wikipedia.org/wiki/International_Space_Station" target="_blank" rel="noopener" style="color:var(--accent)">International Space Station</a>
+      <a href="https://en.wikipedia.org/wiki/International_Space_Station" target="_blank" rel="noopener" class="text-primary hover:underline">International Space Station</a>
       will pass overhead at your location for the next 5 days &mdash; useful for both visual observation and amateur radio passes (AOS/LOS times, azimuth, max elevation).
     </p>
     <div class="flex flex-wrap">
-      <div class="w-100 w-50-ns pr3-ns mb3">
-        <p class="f7 ttu tracked mb2" style="color:var(--text-3)">Reading the table</p>
-        <ul class="f6 lh-copy pl3 mb0" style="color:var(--text-2)">
-          <li class="mb1"><strong style="color:var(--text-1)">Rise / Set</strong> &mdash; when the ISS crosses the horizon and in which direction</li>
-          <li class="mb1"><strong style="color:var(--text-1)">Peak elevation</strong> &mdash; how high it gets; higher = brighter and longer visible. Passes below ~10&deg; are hard to see</li>
-          <li class="mb1"><strong style="color:var(--text-1)">Distance</strong> &mdash; slant range at peak (line-of-sight, not orbital altitude)</li>
-          <li><strong style="color:var(--text-1)">Duration</strong> &mdash; total time above the horizon</li>
+      <div class="w-full md:w-1/2 md:pr-3 mb-3">
+        <p class="text-xs uppercase tracking-wider text-muted-foreground mb-2">Reading the table</p>
+        <ul class="text-sm leading-relaxed text-muted-foreground list-disc pl-4 space-y-1">
+          <li><strong class="text-foreground">Rise / Set</strong> &mdash; when the ISS crosses the horizon and in which direction</li>
+          <li><strong class="text-foreground">Peak elevation</strong> &mdash; how high it gets; higher = brighter and longer visible. Passes below ~10&deg; are hard to see</li>
+          <li><strong class="text-foreground">Distance</strong> &mdash; slant range at peak (line-of-sight, not orbital altitude)</li>
+          <li><strong class="text-foreground">Duration</strong> &mdash; total time above the horizon</li>
         </ul>
       </div>
-      <div class="w-100 w-50-ns pl3-ns mb3" style="border-left:1px solid var(--border)">
-        <p class="f7 ttu tracked mb2" style="color:var(--text-3)">How it works</p>
-        <ul class="f6 lh-copy pl3 mb0" style="color:var(--text-2)">
-          <li class="mb1">Orbital data (TLE) is fetched from <a href="https://celestrak.org" target="_blank" rel="noopener" style="color:var(--accent)">Celestrak</a> and cached for 2 hours</li>
-          <li class="mb1">Pass times are calculated using <a href="https://rhodesmill.org/skyfield/" target="_blank" rel="noopener" style="color:var(--accent)">Skyfield</a> with the SGP4 propagation model &mdash; the same standard used by NORAD</li>
+      <div class="w-full md:w-1/2 md:pl-3 md:border-l mb-3">
+        <p class="text-xs uppercase tracking-wider text-muted-foreground mb-2">How it works</p>
+        <ul class="text-sm leading-relaxed text-muted-foreground list-disc pl-4 space-y-1">
+          <li>Orbital data (TLE) is fetched from <a href="https://celestrak.org" target="_blank" rel="noopener" class="text-primary hover:underline">Celestrak</a> and cached for 2 hours</li>
+          <li>Pass times are calculated using <a href="https://rhodesmill.org/skyfield/" target="_blank" rel="noopener" class="text-primary hover:underline">Skyfield</a> with the SGP4 propagation model &mdash; the same standard used by NORAD</li>
           <li>All times are localized to your browser&apos;s timezone</li>
         </ul>
       </div>
     </div>
   </div>
 
-  <hr class="divider mt4 mb4">
+  <Separator class="my-8" />
 
   <!-- API -->
-  <div class="mb4">
-    <p class="f7 ttu tracked mb3" style="color:var(--text-3)">API</p>
-    <p class="f6 lh-copy mb3" style="color:var(--text-2)">
+  <div class="mb-8">
+    <p class="text-xs uppercase tracking-wider text-muted-foreground mb-3">API</p>
+    <p class="text-sm leading-relaxed text-muted-foreground mb-3">
       Pass predictions are available as JSON. No authentication required.
       Rate limited to 30 requests/minute per IP.
     </p>
 
-    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Endpoint</p>
-    <pre class="f6 pa3 br2 mb3 overflow-x-auto" style="background:var(--surface);border:1px solid var(--border);color:var(--text-1)">GET /api/passes/{'{lat}'}/{'{lng}'}</pre>
+    <p class="text-xs uppercase tracking-wider text-muted-foreground mb-1">Endpoint</p>
+    <pre class="text-sm p-3 rounded-md mb-3 overflow-x-auto bg-card border">GET /api/passes/{'{lat}'}/{'{lng}'}</pre>
 
-    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Example</p>
-    <pre class="f6 pa3 br2 mb3 overflow-x-auto" style="background:var(--surface);border:1px solid var(--border);color:var(--text-1)">curl https://iss-in.space/api/passes/28.3922/-80.6077</pre>
+    <p class="text-xs uppercase tracking-wider text-muted-foreground mb-1">Example</p>
+    <pre class="text-sm p-3 rounded-md mb-3 overflow-x-auto bg-card border">curl https://iss-in.space/api/passes/28.3922/-80.6077</pre>
 
-    <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Response</p>
-    <pre class="f6 pa3 br2 overflow-x-auto" style="background:var(--surface);border:1px solid var(--border);color:var(--text-1)">{`[
+    <p class="text-xs uppercase tracking-wider text-muted-foreground mb-1">Response</p>
+    <pre class="text-sm p-3 rounded-md overflow-x-auto bg-card border">{`[
   {
     "length": 427,
     "length_mins": "7:07",
@@ -104,21 +108,21 @@ try {
   }
 ]`}</pre>
 
-    <div class="mt3">
-      <p class="f7 ttu tracked mb2" style="color:var(--text-3)">Fields</p>
-      <table class="f6 w-100 collapse" style="border-spacing:0;color:var(--text-2)">
+    <div class="mt-3">
+      <p class="text-xs uppercase tracking-wider text-muted-foreground mb-2">Fields</p>
+      <table class="text-sm w-full border-collapse text-muted-foreground">
         <tbody>
-          <tr style="border-bottom:1px solid var(--border)">
-            <td class="pv1 pr3 fw7" style="color:var(--text-1);white-space:nowrap">length</td>
-            <td class="pv1">Pass duration in seconds</td>
+          <tr class="border-b">
+            <td class="py-1 pr-3 font-bold text-foreground whitespace-nowrap">length</td>
+            <td class="py-1">Pass duration in seconds</td>
           </tr>
-          <tr style="border-bottom:1px solid var(--border)">
-            <td class="pv1 pr3 fw7" style="color:var(--text-1);white-space:nowrap">length_mins</td>
-            <td class="pv1">Pass duration as <code style="color:var(--accent)">m:ss</code></td>
+          <tr class="border-b">
+            <td class="py-1 pr-3 font-bold text-foreground whitespace-nowrap">length_mins</td>
+            <td class="py-1">Pass duration as <code class="text-primary">m:ss</code></td>
           </tr>
-          <tr style="border-bottom:1px solid var(--border)">
-            <td class="pv1 pr3 fw7" style="color:var(--text-1);white-space:nowrap">rise / culminate / set</td>
-            <td class="pv1">Event objects, each with <code style="color:var(--accent)">time</code> (ISO 8601 UTC), <code style="color:var(--accent)">degrees</code> (elevation), <code style="color:var(--accent)">azimuth</code> (0&ndash;360&deg;), <code style="color:var(--accent)">direction</code> (cardinal), <code style="color:var(--accent)">distance</code> (km slant range)</td>
+          <tr class="border-b">
+            <td class="py-1 pr-3 font-bold text-foreground whitespace-nowrap">rise / culminate / set</td>
+            <td class="py-1">Event objects, each with <code class="text-primary">time</code> (ISO 8601 UTC), <code class="text-primary">degrees</code> (elevation), <code class="text-primary">azimuth</code> (0&ndash;360&deg;), <code class="text-primary">direction</code> (cardinal), <code class="text-primary">distance</code> (km slant range)</td>
           </tr>
         </tbody>
       </table>

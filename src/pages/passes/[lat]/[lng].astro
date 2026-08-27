@@ -37,10 +37,10 @@ const pageUrl = `https://iss-in.space/passes/${latNum}/${lngNum}`;
 
 <Layout title={pageTitle} ogTitle={pageTitle} ogDescription={pageDesc} ogUrl={pageUrl}>
   {error ? (
-    <div class="tc pv5 f5" style="color:var(--text-2)">
+    <div class="text-center py-16 text-base text-muted-foreground">
       <p>Could not load pass predictions.</p>
-      <p class="f6" style="color:var(--text-3)">{error}</p>
-      <a href="/" class="f6 dim" style="color:var(--accent)">&larr; Back</a>
+      <p class="text-sm text-muted-foreground/70">{error}</p>
+      <a href="/" class="text-sm text-primary hover:underline">&larr; Back</a>
     </div>
   ) : (
     <PassesApp predictions={predictions} dlat={dlat} dlng={dlng} lat={latNum} lng={lngNum} client:only="vue" />

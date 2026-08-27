@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn-vue/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+  --background: #f4f6fb;
+  --foreground: #1a1f2e;
+  --card: #ffffff;
+  --card-foreground: #1a1f2e;
+  --popover: #ffffff;
+  --popover-foreground: #1a1f2e;
+  --primary: #1d5fa8;
+  --primary-foreground: #ffffff;
+  --secondary: #e8ecf4;
+  --secondary-foreground: #1a1f2e;
+  --muted: #e8ecf4;
+  --muted-foreground: #445068;
+  --accent: #ddeeff;
+  --accent-foreground: #1d5fa8;
+  --destructive: #dc2626;
+  --border: #cdd4e0;
+  --input: #cdd4e0;
+  --ring: #1d5fa8;
+  --elev-excellent: #0e8fad;
+  --elev-good: #1a7a50;
+  --elev-avg: #445068;
+  --elev-low: #8a95a8;
+}
+
+.dark {
+  --background: #0e1016;
+  --foreground: #dce1ec;
+  --card: #161b24;
+  --card-foreground: #dce1ec;
+  --popover: #161b24;
+  --popover-foreground: #dce1ec;
+  --primary: #5c9ee8;
+  --primary-foreground: #0e1016;
+  --secondary: #1e2330;
+  --secondary-foreground: #dce1ec;
+  --muted: #1e2330;
+  --muted-foreground: #8c96ab;
+  --accent: #1a2e4a;
+  --accent-foreground: #5c9ee8;
+  --destructive: #f87171;
+  --border: #2a303e;
+  --input: #2a303e;
+  --ring: #5c9ee8;
+  --elev-excellent: #5fd4f4;
+  --elev-good: #3ec487;
+  --elev-avg: #8c96ab;
+  --elev-low: #6b7891;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-elev-excellent: var(--elev-excellent);
+  --color-elev-good: var(--elev-good);
+  --color-elev-avg: var(--elev-avg);
+  --color-elev-low: var(--elev-low);
+  --font-sans: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-heading: var(--font-sans);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* AR overlay — full-screen camera view, structural only (not shadcn-themed) */
+.ar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  touch-action: none;
+}
+
+.ar-video,
+.ar-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ar-video {
+  object-fit: cover;
+}
+
+.ar-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent);
+  z-index: 2;
+}
+
+.ar-pass-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ar-pass-time {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ar-prompt {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 3;
+  gap: 20px;
+  padding: 32px;
+  text-align: center;
+}
+
+.ar-prompt-text {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.5;
+}

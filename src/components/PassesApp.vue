@@ -1,136 +1,144 @@
 <template>
   <div>
-    <div class="flex flex-wrap items-start justify-between mb4">
+    <div class="flex flex-wrap items-start justify-between gap-4 mb-8">
       <div>
-        <p class="f7 ttu tracked mb1" style="color:var(--text-3)">Passes for</p>
-        <p class="f3 fw7 mb1" style="color:var(--text-1)">{{ dlat }}, {{ dlng }}</p>
-        <p class="f6 mb0" style="color:var(--text-2)">
-          {{ tz.name }} <span style="color:var(--text-3)">(UTC{{ tz.offset }})</span>
+        <p class="text-xs uppercase tracking-wider text-muted-foreground mb-1">Passes for</p>
+        <p class="text-2xl font-bold mb-1">{{ dlat }}, {{ dlng }}</p>
+        <p class="text-sm text-muted-foreground">
+          {{ tz.name }} <span class="opacity-70">(UTC{{ tz.offset }})</span>
         </p>
       </div>
-      <a href="/" class="f6 dim mt2 no-underline" style="color:var(--text-3)">&larr; Change location</a>
+      <Button as="a" href="/" variant="ghost" size="sm" class="text-muted-foreground -mr-3">&larr; Change location</Button>
     </div>
 
-    <div class="controls-bar flex flex-wrap items-center mb3 pv2 ph3">
-      <span class="f7 ttu tracked mr3" style="color:var(--text-3)">Display</span>
-      <label class="f6 mr4 flex items-center">
-        <input type="checkbox" v-model="display.degrees" class="mr1"> Degrees
-      </label>
-      <label class="f6 flex items-center">
-        <input type="checkbox" v-model="display.hour24"> 24h time
-      </label>
-    </div>
+    <Card class="mb-4 py-3">
+      <CardContent class="flex flex-wrap items-center gap-6">
+        <span class="text-xs uppercase tracking-wider text-muted-foreground">Display</span>
+        <Label class="flex items-center gap-2 text-sm font-normal cursor-pointer">
+          <Switch v-model="display.degrees" size="sm" />
+          Degrees
+        </Label>
+        <Label class="flex items-center gap-2 text-sm font-normal cursor-pointer">
+          <Switch v-model="display.hour24" size="sm" />
+          24h time
+        </Label>
+      </CardContent>
+    </Card>
 
-    <div class="flex flex-wrap items-center mb2 ph3 pb2" style="gap:0.75rem">
-      <span class="f7 ttu tracked" style="color:var(--text-3)">Max elevation</span>
-      <span class="f7"><span class="elev-excellent">&#9632;</span> <span style="color:var(--text-2)">Excellent &mdash; &ge;60&deg;</span></span>
-      <span class="f7"><span class="elev-good">&#9632;</span> <span style="color:var(--text-2)">Good &mdash; &ge;30&deg;</span></span>
-      <span class="f7"><span class="elev-avg">&#9632;</span> <span style="color:var(--text-2)">Fair &mdash; &ge;10&deg;</span></span>
-      <span class="f7"><span class="elev-low">&#9632;</span> <span style="color:var(--text-2)">Low &mdash; &lt;10&deg;</span></span>
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <span class="text-xs uppercase tracking-wider text-muted-foreground mr-1">Max elevation</span>
+      <Badge variant="outline" class="text-elev-excellent border-elev-excellent/40">Excellent &mdash; &ge;60&deg;</Badge>
+      <Badge variant="outline" class="text-elev-good border-elev-good/40">Good &mdash; &ge;30&deg;</Badge>
+      <Badge variant="outline" class="text-elev-avg border-elev-avg/40">Fair &mdash; &ge;10&deg;</Badge>
+      <Badge variant="outline" class="text-elev-low border-elev-low/40">Low &mdash; &lt;10&deg;</Badge>
     </div>
-    <p class="f7 mb4 ph1" style="color:var(--text-3)">Higher elevation = brighter &amp; easier to see. Face the Rise direction when the pass starts, then follow it across the sky. The ISS looks like a bright, fast-moving star &mdash; no telescope needed.</p>
+    <p class="text-xs text-muted-foreground mb-8">Higher elevation = brighter &amp; easier to see. Face the Rise direction when the pass starts, then follow it across the sky. The ISS looks like a bright, fast-moving star &mdash; no telescope needed.</p>
 
-    <div v-if="Object.keys(groupedPredictions).length === 0" class="tc pv5 f5" style="color:var(--text-2)">
+    <div v-if="Object.keys(groupedPredictions).length === 0" class="text-center py-16 text-sm text-muted-foreground">
       No passes in the next 5 days.
     </div>
 
-    <div v-for="(passes, date) in groupedPredictions" :key="date" class="mb4">
-      <p class="date-header mb2">{{ date }}</p>
+    <div v-for="(passes, date) in groupedPredictions" :key="date" class="mb-8">
+      <p class="text-sm font-semibold mb-2 pb-1 border-b">{{ date }}</p>
 
       <!-- Mobile cards -->
-      <div class="dn-ns">
-        <div v-for="(pred, i) in passes" :key="i" class="pass-card mb2 pa3 br2" style="background:var(--surface);border:1px solid var(--border)">
-          <div class="flex items-center justify-between mb2">
-            <span class="f4 fw7" style="color:var(--text-1)">{{ pred.rise.time }}</span>
-            <span class="f6" style="color:var(--text-3)">{{ pred.length_mins }}</span>
-          </div>
-          <div class="flex items-center mb2">
-            <span class="f2 fw7 mr3" :class="elevationClass(pred.culminate.degrees)">{{ pred.culminate.degrees }}&deg;</span>
-            <div>
-              <div class="f7 ttu tracked mb1" style="color:var(--text-3)">Max elevation &mdash; <span :class="elevationClass(pred.culminate.degrees)">{{ elevationLabel(pred.culminate.degrees) }}</span></div>
-              <div class="f6" style="color:var(--text-2)">
-                <span v-if="!display.degrees">{{ pred.culminate.direction }}</span>
-                <span v-else>{{ pred.culminate.azimuth }}&deg;</span>
-                &nbsp;&middot;&nbsp;{{ pred.culminate.distance }} km away
-              </div>
+      <div class="grid gap-2 md:hidden">
+        <Card v-for="(pred, i) in passes" :key="i" class="py-3">
+          <CardContent class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-lg font-bold">{{ pred.rise.time }}</span>
+              <span class="text-sm text-muted-foreground">{{ pred.length_mins }}</span>
             </div>
-          </div>
-          <button v-if="isFuturePass(pred)" class="ar-launch-btn" @click="openAR(pred)">
-            &#9685; Point me there
-          </button>
-          <div class="flex f7 pt2" style="color:var(--text-3);border-top:1px solid var(--border)">
-            <div class="flex-auto">
-              <div class="ttu tracked mb1">Rise</div>
-              <div style="color:var(--text-2)">{{ pred.rise.time }}</div>
+            <div class="flex items-center gap-3">
+              <span class="text-3xl font-bold" :class="elevationClass(pred.culminate.degrees)">{{ pred.culminate.degrees }}&deg;</span>
               <div>
-                <span v-if="!display.degrees">Face <strong>{{ pred.rise.direction }}</strong></span>
-                <span v-else>{{ pred.rise.azimuth }}&deg;</span>
+                <div class="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                  Max elevation
+                  <Badge variant="outline" :class="elevationClass(pred.culminate.degrees)" class="normal-case tracking-normal">{{ elevationLabel(pred.culminate.degrees) }}</Badge>
+                </div>
+                <div class="text-sm text-muted-foreground">
+                  <span v-if="!display.degrees">{{ pred.culminate.direction }}</span>
+                  <span v-else>{{ pred.culminate.azimuth }}&deg;</span>
+                  &nbsp;&middot;&nbsp;{{ pred.culminate.distance }} km away
+                </div>
               </div>
             </div>
-            <div class="flex-auto">
-              <div class="ttu tracked mb1">Peak</div>
-              <div style="color:var(--text-2)">{{ pred.culminate.time }}</div>
-            </div>
-            <div class="flex-auto">
-              <div class="ttu tracked mb1">Disappears</div>
-              <div style="color:var(--text-2)">{{ pred.set.time }}</div>
-              <div>
-                <span v-if="!display.degrees">{{ pred.set.direction }}</span>
-                <span v-else>{{ pred.set.azimuth }}&deg;</span>
+            <Button v-if="isFuturePass(pred)" class="w-full" @click="openAR(pred)">
+              &#9685; Point me there
+            </Button>
+            <Separator />
+            <div class="flex text-xs text-muted-foreground pt-1">
+              <div class="flex-1">
+                <div class="uppercase tracking-wider mb-1">Rise</div>
+                <div class="text-foreground">{{ pred.rise.time }}</div>
+                <div>
+                  <span v-if="!display.degrees">Face <strong class="text-foreground">{{ pred.rise.direction }}</strong></span>
+                  <span v-else>{{ pred.rise.azimuth }}&deg;</span>
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="uppercase tracking-wider mb-1">Peak</div>
+                <div class="text-foreground">{{ pred.culminate.time }}</div>
+              </div>
+              <div class="flex-1">
+                <div class="uppercase tracking-wider mb-1">Disappears</div>
+                <div class="text-foreground">{{ pred.set.time }}</div>
+                <div>
+                  <span v-if="!display.degrees">{{ pred.set.direction }}</span>
+                  <span v-else>{{ pred.set.azimuth }}&deg;</span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       <!-- Desktop table -->
-      <div class="dn db-ns">
-        <table class="passes-table">
-          <thead>
-            <tr class="f7 tl">
-              <th class="pb2 pr3 fw4">Duration</th>
-              <th class="pb2 pr3 fw4" colspan="2">Rise</th>
-              <th class="pb2 pr3 fw4" colspan="4">Peak</th>
-              <th class="pb2 pr3 fw4" colspan="2">Set</th>
-            </tr>
-            <tr class="f7 tl" style="color:var(--text-3)">
-              <th class="pb2 pr3 fw4"></th>
-              <th class="pb2 pr3 fw4">Time</th>
-              <th class="pb2 pr3 fw4">Face this dir</th>
-              <th class="pb2 pr3 fw4">Time</th>
-              <th class="pb2 pr3 fw4">Max elev</th>
-              <th class="pb2 pr3 fw4">Dir</th>
-              <th class="pb2 pr3 fw4">Range (km)</th>
-              <th class="pb2 pr3 fw4">Time</th>
-              <th class="pb2 pr3 fw4">Dir</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(pred, i) in passes" :key="i" class="f5">
-              <td class="pv2 pr3 f6" style="color:var(--text-2)">{{ pred.length_mins }}</td>
-              <td class="pv2 pr3">{{ pred.rise.time }}</td>
-              <td class="pv2 pr3 f6" style="color:var(--text-2)">
+      <Card class="hidden md:block py-0 gap-0 overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Duration</TableHead>
+              <TableHead colspan="2">Rise</TableHead>
+              <TableHead colspan="4">Peak</TableHead>
+              <TableHead colspan="2">Set</TableHead>
+            </TableRow>
+            <TableRow class="text-muted-foreground">
+              <TableHead></TableHead>
+              <TableHead>Time</TableHead>
+              <TableHead>Face this dir</TableHead>
+              <TableHead>Time</TableHead>
+              <TableHead>Max elev</TableHead>
+              <TableHead>Dir</TableHead>
+              <TableHead>Range (km)</TableHead>
+              <TableHead>Time</TableHead>
+              <TableHead>Dir</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="(pred, i) in passes" :key="i">
+              <TableCell class="text-sm text-muted-foreground">{{ pred.length_mins }}</TableCell>
+              <TableCell class="font-medium">{{ pred.rise.time }}</TableCell>
+              <TableCell class="text-sm text-muted-foreground">
                 <span v-if="!display.degrees">{{ pred.rise.direction }}</span>
                 <span v-else>{{ pred.rise.azimuth }}&deg;</span>
-              </td>
-              <td class="pv2 pr3">{{ pred.culminate.time }}</td>
-              <td class="pv2 pr3 fw7" :class="elevationClass(pred.culminate.degrees)">
-                {{ pred.culminate.degrees }}&deg;
-              </td>
-              <td class="pv2 pr3 f6" style="color:var(--text-2)">
+              </TableCell>
+              <TableCell class="font-medium">{{ pred.culminate.time }}</TableCell>
+              <TableCell class="font-bold" :class="elevationClass(pred.culminate.degrees)">{{ pred.culminate.degrees }}&deg;</TableCell>
+              <TableCell class="text-sm text-muted-foreground">
                 <span v-if="!display.degrees">{{ pred.culminate.direction }}</span>
                 <span v-else>{{ pred.culminate.azimuth }}&deg;</span>
-              </td>
-              <td class="pv2 pr3 f6" style="color:var(--text-2)">{{ pred.culminate.distance }}</td>
-              <td class="pv2 pr3">{{ pred.set.time }}</td>
-              <td class="pv2 pr3 f6" style="color:var(--text-2)">
+              </TableCell>
+              <TableCell class="text-sm text-muted-foreground">{{ pred.culminate.distance }}</TableCell>
+              <TableCell class="font-medium">{{ pred.set.time }}</TableCell>
+              <TableCell class="text-sm text-muted-foreground">
                 <span v-if="!display.degrees">{{ pred.set.direction }}</span>
                 <span v-else>{{ pred.set.azimuth }}&deg;</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Card>
     </div>
 
     <!-- AR Overlay -->
@@ -141,21 +149,21 @@
       <div class="ar-top">
         <div v-if="ar.pass" class="ar-pass-info">
           <span class="ar-pass-time">{{ ar.pass.rise.time }} rise</span>
-          <span :class="elevationClass(ar.pass.culminate.degrees)" class="ar-pass-quality">
+          <Badge variant="outline" :class="elevationClass(ar.pass.culminate.degrees)" class="bg-black/40 backdrop-blur-sm">
             {{ elevationLabel(ar.pass.culminate.degrees) }} &middot; {{ ar.pass.culminate.degrees }}&deg; max
-          </span>
+          </Badge>
         </div>
-        <button class="ar-close-btn" @click="closeAR">&#10005;</button>
+        <Button variant="secondary" size="icon" class="rounded-full size-8" @click="closeAR">&#10005;</Button>
       </div>
 
       <div v-if="ar.needsIOSPermission && !ar.error" class="ar-prompt">
         <p class="ar-prompt-text">Tap below to enable the compass</p>
-        <button class="ar-prompt-btn" @click="requestIOSOrientationPermission">Enable Compass</button>
+        <Button @click="requestIOSOrientationPermission">Enable Compass</Button>
       </div>
 
       <div v-if="ar.error" class="ar-prompt">
         <p class="ar-prompt-text">{{ ar.error }}</p>
-        <button class="ar-prompt-btn" @click="closeAR">Close</button>
+        <Button @click="closeAR">Close</Button>
       </div>
     </div>
   </div>
@@ -163,6 +171,20 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
 
 const props = defineProps<{
   predictions: any[];
@@ -218,10 +240,10 @@ const groupedPredictions = computed(() => {
 });
 
 function elevationClass(deg: number) {
-  if (deg >= 60) return 'elev-excellent';
-  if (deg >= 30) return 'elev-good';
-  if (deg >= 10) return 'elev-avg';
-  return 'elev-low';
+  if (deg >= 60) return 'text-elev-excellent';
+  if (deg >= 30) return 'text-elev-good';
+  if (deg >= 10) return 'text-elev-avg';
+  return 'text-elev-low';
 }
 
 function elevationLabel(deg: number) {
