@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.9.1...v1.10.0) (2026-08-27)
+
+
+### Features
+
+* restyle UI with shadcn-vue components ([a0643e3](https://github.com/patrickjmcd/iss-in.space/commit/a0643e3bf31f2f6072b99a29c6b966b70e464e0b))
+
 ## [1.9.1](https://github.com/patrickjmcd/iss-in.space/compare/v1.9.0...v1.9.1) (2026-08-26)
 
 
