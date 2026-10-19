@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.10.1](https://github.com/patrickjmcd/iss-in.space/compare/v1.10.0...v1.10.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **deps:** update @vueuse/core to v15 ([#27](https://github.com/patrickjmcd/iss-in.space/issues/27)) ([272c4c0](https://github.com/patrickjmcd/iss-in.space/commit/272c4c09c0119d108f66e54bb75f38834040fcda))
+* **deps:** update astro monorepo to v7 ([#26](https://github.com/patrickjmcd/iss-in.space/issues/26)) ([c2513c5](https://github.com/patrickjmcd/iss-in.space/commit/c2513c57eb75c058af9e6051c6d2da5ae1231b59))
+
 ## [1.10.0](https://github.com/patrickjmcd/iss-in.space/compare/v1.9.1...v1.10.0) (2026-08-27)
 
 
